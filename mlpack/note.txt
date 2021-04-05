@@ -1,0 +1,38 @@
+format supporté par data::Load(): pour être sûr ImageFormatSupported()
+
+    csv (comma-separated values), denoted by .csv or .txt
+    tsv (tab-separated values), denoted by .tsv, .csv, or .txt
+    ASCII (raw ASCII, with space-separated values), denoted by .txt
+    Armadillo ASCII (Armadillo's text format with a header), denoted by .txt
+    PGM, denoted by .pgm
+    PPM, denoted by .ppm
+    Armadillo binary, denoted by .bin
+    Raw binary, denoted by .bin (note: this will be loaded as one-dimensional data, which is likely not what is desired.)
+    HDF5, denoted by .hdf, .hdf5, .h5, or .he5 (note: HDF5 must be enabled in the Armadillo configuration)
+    ARFF, denoted by .arff (note: this is not supported by all mlpack command-line programs ; see Categorical features and command line programs)
+
+format des Matrices:
+Quand on load un csv, normalement les colonnes correspondent aux différentes dimensions du dataset et les lignes à un point mais ici les matrices chargent les csv en transposant colonne et ligne
+
+Idée pour le modèle:
+4 CNN : 2 pour la case de départ (c1, l1), 2 pour la case à atteindre (c2, l2) : [c1, l1, c2, l2]
+Donc en entrée : un plateau d'échec et en sortie respectivement : la pièce à bouger, la colonne où aller et la ligne où aller.
+Les pièces doivent être mise sous la forme de vecteur : OneLoneCoder(), 12 pièces donc de dimension 24,
+les features doivent donc être de dimension 64*12 = 768 si on fait des couches denses seulement,
+mais on va utiliser des CNN donc l'entrée est de dimension 12*8x8 = 96x8
+Les sorties seront respectivement de dimension : 8, 8, 8, 8                                                                                                      _
+On a donc 3 modèles à entrainer avec des données de la forme (plateau, pièce, c, l), avec plateau : ([0,1,0,0,0,0,0,0,0,0,0,0], ..., [0,0,0,0,0,0,0,0,1,0,0,0]) |
+                                                                                                    |___________________________12x8__________________________| |
+                                                                                                                                                                8
+                                                                                                                                                                |
+                                                                                                                                                               _|
+Peut-être faire un modèle pour les noirs et un autre pour les blancs
+il va falloir coder un convertisseur : e5,e4... -> e, 7, e, 5
+
+dataset : https://www.kaggle.com/rishidamarla/chess-games
+
+Fonctions à faire: pour chaque couleur
+- vector<vector<string>> ExtractMovesSet(string filename) : extraits l'ensembles des coups pour toutes les parties du dataset, les coup seront écrits sans les +,x,#
+- vector<int> ConvertPieceToVect()
+- vector<Chess> ConvertMovesToTabChess(vector<string> moves) : cette fonction prend en entrée tous les coups d'une partie et les convertis en ensemble d'états (Chess) de la partie
+- void SaveToFormatCSV(vector<Chess> partie) : sauvegarde l'ensemble des parties au format défini précédemment : plateau, pièce, colonne, ligne
