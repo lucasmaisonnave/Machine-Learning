@@ -1,1 +1,1 @@
-obj/main.o: src/main.cpp src/../include/rapidcsv.h
+obj/main.o: main.cpp include/rapidcsv.h include/Chess.h

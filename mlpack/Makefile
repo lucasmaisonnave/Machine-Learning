@@ -10,7 +10,7 @@ LDFLAGS = -larmadillo -lmlpack -fopenmp -lboost_serialization
 # Makefile settings - Can be customized.
 APPNAME = mlapp
 EXT = .cpp
-SRCDIR = src
+SRCDIR = .
 OBJDIR = obj
 
 ############## Do not change anything from here downwards! #############

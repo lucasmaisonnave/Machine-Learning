@@ -30,9 +30,10 @@ Peut-être faire un modèle pour les noirs et un autre pour les blancs
 il va falloir coder un convertisseur : e5,e4... -> e, 7, e, 5
 
 dataset : https://www.kaggle.com/rishidamarla/chess-games
+chess notation : https://www.ichess.net/blog/chess-notation/
 
 Fonctions à faire: pour chaque couleur
-- vector<vector<string>> ExtractMovesSet(string filename) : extraits l'ensembles des coups pour toutes les parties du dataset, les coup seront écrits sans les +,x,#
+- vector<string> ExtractMovesSet(string filename) : extraits l'ensembles des coups pour toutes les parties du dataset, les coup seront écrits sans les +,x,#
 - vector<int> ConvertPieceToVect()
-- vector<Chess> ConvertMovesToTabChess(vector<string> moves) : cette fonction prend en entrée tous les coups d'une partie et les convertis en ensemble d'états (Chess) de la partie
+- vector<Chess> ConvertMovesToVectChess(vector<string> moves) : cette fonction prend en entrée tous les coups d'une partie et les convertis en ensemble d'états (Chess) de la partie
 - void SaveToFormatCSV(vector<Chess> partie) : sauvegarde l'ensemble des parties au format défini précédemment : plateau, pièce, colonne, ligne
