@@ -88,7 +88,7 @@ public:
 	int getScoreMat(int col) const {
 		return getNb_Piece(col, PION)*10 + getNb_Piece(col, CAVALIER) * 30 + getNb_Piece(col, FOU) * 30 + getNb_Piece(col, TOUR) * 50 + getNb_Piece(col, DAME) * 90 + getNb_Piece(col, ROI) * 900;
 	}
-	uint8_t get_whoplays() const{
+	int get_whoplays() const{
 		return who_plays;
 	}
 	void set_whoplays(uint8_t wp){
@@ -272,5 +272,5 @@ private:
 	bool Roi_mov[2] = { false, false };
 	bool Tour_mov[2][2] = { {false, false}, {false, false} };//(couleur, dir)
 	int Nb_Piece[2][6] = { {0,0,0,0,0,0}, {0,0,0,0,0,0}};//Nombre de pi�ces par type et couleur
-	uint8_t who_plays = BLANC;
+	int who_plays = BLANC;
 };
