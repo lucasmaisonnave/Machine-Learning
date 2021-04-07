@@ -4,7 +4,8 @@
 #include <map>
 //#include <mlpack/methods/neighbor_search/neighbor_search.hpp>
 
-//using namespace mlpack;
+using namespace mlpack;
+using namespace arma;
 //using namespace mlpack::neighbor; // NeighborSearch and NearestNeighborSort
 //using namespace mlpack::metric; // ManhattanDistance
 
@@ -101,9 +102,8 @@ public:
 		
 		//Actions possibles
 		//actions = ai.Actions(chess);
-    movesSet = ExtractMovesSet("./data/ChessGames.csv");
-    moves = movesSet[0];
-    cout << moves << endl;
+		movesSet = ExtractMovesSet("./data/ChessGames.csv");
+		moves = movesSet[33];
 		//Init la souris
 		Csouris.couleur = NOIR;
 		Csouris.type = VIDE;
@@ -273,6 +273,9 @@ int main()
 	AIGame game;
 	game.Construct(1080, 720, 1, 1);
 	game.Start();
+	/*arma::mat data;
+	data::Load("ChessStates.csv", data, true);
+	arma::cube c(data.memptr(), 5,5,5,false);*/
 	return 0;
 }
 

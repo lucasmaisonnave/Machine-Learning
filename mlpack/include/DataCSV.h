@@ -9,8 +9,8 @@ using namespace rapidcsv;
 vector<string> ExtractMovesSet(string filename){
   rapidcsv::Document doc(filename); 
   std::vector<std::string> col = doc.GetColumn<std::string>("Moves");
-  
-  for(int j = 0; j < col.size(); j++){
+  vector<std::string>::iterator it = col.begin();
+  for(int j = 0; j < col.size(); j++, it++){
     col[j].erase(0,3);
     for(int i = 0; i < col[j].size(); i++){
       if(col[j][i] == '.'){
@@ -22,6 +22,15 @@ vector<string> ExtractMovesSet(string filename){
       }
       else if(col[j][i] == 'x' || col[j][i] == '+' || col[j][i] == '#')
         col[j].erase(i, 1);
+      else if(col[j][i] == '='){
+        if(col[j][i + 1] != 'Q'){ //Si on transforme le pion en autre chose que la dame
+          col.erase(it);
+          j--;
+          it--;
+        }
+        else
+          col[j].erase(i, 2);
+      }
     }
   }
   return col;
@@ -136,7 +145,7 @@ int ConvertP(const char let){
 /*
   Convertis un coup au format standard des échecs en action (c1, l1, c2, l2)
 */
-Action ConvertToAction(string move, Chess& chess){
+Action ConvertToAction(const string& move, Chess& chess){
   Action action = {-1,-1,-1,-1};
 
   if(move[0] == 'O'){ //on rook
@@ -186,7 +195,7 @@ Action ConvertToAction(string move, Chess& chess){
     }
     else{ //C'est une autre pièce : B, N, R, Q, K
       action.c2 = ConvertL(move[1]) - 1;
-      action.l2 = ConvertI(move.back())- 1;
+      action.l2 = ConvertI(move.back()) - 1;
       int piece = ConvertP(move[0]);
       for(int c = 0; c < CHESS_SIZE; c++)
         for(int l = 0; l < CHESS_SIZE; l++)
@@ -199,7 +208,8 @@ Action ConvertToAction(string move, Chess& chess){
             }
     }
   }
-  else{ //Ambiguité sur une pièce autre que PION, ex : Nce4
+  else{ //taille 4
+ //Ambiguité sur une pièce autre que PION, ex : Nce4
     action.c2 = ConvertL(move[2]) - 1;
     action.l2 = ConvertI(move.back()) - 1;
     action.c1 = ConvertL(move[1]) - 1;
@@ -214,15 +224,77 @@ Action ConvertToAction(string move, Chess& chess){
   return action;
 }
 
-/*vector<Chess> ConvertMovesToVectChess(vector<string> movesSet){
-  for(int i = 0; i < movesSet.size(); i++){
+vector<pair<Chess, Action>> ConvertMovesToVectChessAction(const vector<string>& movesSet){
+  vector<pair<Chess, Action>> set;
+  for(string moves : movesSet){
     Chess chess;
-
+    while(moves.size() != 0)
+    {    
+      string move = ExtractMove(moves);
+      Action act = ConvertToAction(move, chess);
+      pair<Chess, Action> pr;
+      pr.first = chess;
+      pr.second = act;
+      set.push_back(pr);
+      chess.play(act);
+    }
   }
+  return set;
+}
 
-}*/
-void printAction(const Action& act){
-  cout << "c1 : " << act.c1 << " l1 : " << act.l1 << " c2 : " << act.c2 << " l2 : " << act.l2 << endl;
+vector<int> ConvertPieceToVect(const int piece, const int couleur){
+  vector<int> vect = {0,0,0,0,0,0,0,0};
+  if(piece == VIDE)
+    return vect;
+  if(couleur == BLANC)
+    vect[7] = 1;
+  else
+    vect[6] = 1;
+
+  
+  switch(piece){
+    case PION:
+      vect[0] = 1;
+      break;
+    case DAME:
+      vect[4] = 1;
+      break;
+    case TOUR:
+      vect[2] = 1;
+      break;
+    case FOU:
+      vect[3] = 1;
+      break;
+    case ROI:
+      vect[5] = 1;
+      break;
+    case CAVALIER:
+      vect[1] = 1;
+      break;
+    default:
+      break;
+  }
+  return vect;
+}
+
+void CreateFile(const vector<pair<Chess, Action>>& statesSet, string filename){
+  ofstream file;
+  file.open(filename, ios::out);
+  //Chess
+  for(int i = 0; i < statesSet.size(); i++){
+    for(int c = 0; c < CHESS_SIZE; c++)
+      for(int l = 0; l < CHESS_SIZE; l++){
+        int piece = statesSet[i].first.getCase(c,l).type;
+        int couleur = statesSet[i].first.getCase(c,l).couleur;
+        vector<int> vect = ConvertPieceToVect(piece, couleur);
+        for(int j = 0; j < vect.size(); j++){
+            file << vect[j] << ",";
+        }
+      }
+    file << statesSet[i].second.c1 << "," << statesSet[i].second.l1 << "," << statesSet[i].second.c2 << "," << statesSet[i].second.l2 << endl;
+  }
+  //Action
+  file.close();
 }
 
 #endif

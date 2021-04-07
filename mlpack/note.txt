@@ -20,12 +20,12 @@ Donc en entrée : un plateau d'échec et en sortie respectivement : la pièce à
 Les pièces doivent être mise sous la forme de vecteur : OneLoneCoder(), 12 pièces donc de dimension 24,
 les features doivent donc être de dimension 64*12 = 768 si on fait des couches denses seulement,
 mais on va utiliser des CNN donc l'entrée est de dimension 12*8x8 = 96x8
-Les sorties seront respectivement de dimension : 8, 8, 8, 8                                                                                                      _
-On a donc 3 modèles à entrainer avec des données de la forme (plateau, pièce, c, l), avec plateau : ([0,1,0,0,0,0,0,0,0,0,0,0], ..., [0,0,0,0,0,0,0,0,1,0,0,0]) |
-                                                                                                    |___________________________12x8__________________________| |
-                                                                                                                                                                8
-                                                                                                                                                                |
-                                                                                                                                                               _|
+Les sorties seront respectivement de dimension : 8, 8, 8, 8                                                                                                        _
+On a donc 3 modèles à entrainer avec des données de la forme (plateau, pièce, c, l), avec plateau : X : ([0,1,0,0,0,0,0,0,0,0,0,0], ..., [0,0,0,0,0,0,0,0,1,0,0,0]) |   y : c1, l1, c2, l2
+                                                                                                        |___________________________12x8__________________________| |
+                                                                                                                                                                    8
+                                                                                                                                                                    |
+                                                                                                                                                                   _|
 Peut-être faire un modèle pour les noirs et un autre pour les blancs
 il va falloir coder un convertisseur : e5,e4... -> e, 7, e, 5
 
@@ -37,3 +37,8 @@ Fonctions à faire: pour chaque couleur
 - vector<int> ConvertPieceToVect()
 - vector<Chess> ConvertMovesToVectChess(vector<string> moves) : cette fonction prend en entrée tous les coups d'une partie et les convertis en ensemble d'états (Chess) de la partie
 - void SaveToFormatCSV(vector<Chess> partie) : sauvegarde l'ensemble des parties au format défini précédemment : plateau, pièce, colonne, ligne
+
+Convertir un pièce en vecteur:
+ - [Pion, Cavalier, Tour, Fou, Dame, Roi, Noir, Blanc] -> Je test ça
+ - [Pion, Cavalier, Tour, Fou, Dame, Roi]
+ - [PionB, CavalierB, TourB, FouB, DameB, RoiB, PionN, CavalierN, TourN, FouN, DameN, RoiN]
