@@ -270,12 +270,21 @@ public:
 
 int main()
 {
-	AIGame game;
+	/*AIGame game;
 	game.Construct(1080, 720, 1, 1);
-	game.Start();
+	game.Start();*/
 	/*arma::mat data;
 	data::Load("ChessStates.csv", data, true);
 	arma::cube c(data.memptr(), 5,5,5,false);*/
+
+	//Test de la création du fichier
+	cout << "Loading moves" << endl;
+	vector<string> movesSet = ExtractMovesSet("./data/ChessGames.csv");
+	arma::Mat<int> mat;
+	cout << "Converting data in matrix" << endl;
+	ConvertMovesSetToMat(movesSet, mat);
+	cout << "Saving data" <<endl;
+	mlpack::data::Save("./data/DataGames.csv", mat);
 	return 0;
 }
 

@@ -3,33 +3,51 @@
 #include <iostream>
 #include <string>
 #include <map>
+#include <mlpack/core.hpp>
 #include "rapidcsv.h"
 #include "Chess.h"
 using namespace rapidcsv;
+
+#define ELO_MIN 2500
+
+typedef Col <int> coli;
+
+
 vector<string> ExtractMovesSet(string filename){
   rapidcsv::Document doc(filename); 
   std::vector<std::string> col = doc.GetColumn<std::string>("Moves");
+  std::vector<int> col_elo = doc.GetColumn<int>("White Elo");
   vector<std::string>::iterator it = col.begin();
-  for(int j = 0; j < col.size(); j++, it++){
-    col[j].erase(0,3);
-    for(int i = 0; i < col[j].size(); i++){
-      if(col[j][i] == '.'){
-        while(col[j][i] != ' '){
+  vector<int>::iterator it_elo = col_elo.begin();
+  for(int j = 0; j < col.size(); j++, it++, it_elo++){
+    if(col_elo[j] < ELO_MIN){
+      col.erase(it);
+      col_elo.erase(it_elo);
+      j--;
+      it--;
+      it_elo--;
+    }
+    else{
+      col[j].erase(0,3);
+      for(int i = 0; i < col[j].size(); i++){
+        if(col[j][i] == '.'){
+          while(col[j][i] != ' '){
+            col[j].erase(i, 1);
+            i--;
+          }
           col[j].erase(i, 1);
-          i--;
         }
-        col[j].erase(i, 1);
-      }
-      else if(col[j][i] == 'x' || col[j][i] == '+' || col[j][i] == '#')
-        col[j].erase(i, 1);
-      else if(col[j][i] == '='){
-        if(col[j][i + 1] != 'Q'){ //Si on transforme le pion en autre chose que la dame
-          col.erase(it);
-          j--;
-          it--;
+        else if(col[j][i] == 'x' || col[j][i] == '+' || col[j][i] == '#')
+          col[j].erase(i, 1);
+        else if(col[j][i] == '='){
+          if(col[j][i + 1] != 'Q'){ //Si on transforme le pion en autre chose que la dame
+            col.erase(it);
+            j--;
+            it--;
+          }
+          else
+            col[j].erase(i, 2);
         }
-        else
-          col[j].erase(i, 2);
       }
     }
   }
@@ -224,26 +242,8 @@ Action ConvertToAction(const string& move, Chess& chess){
   return action;
 }
 
-vector<pair<Chess, Action>> ConvertMovesToVectChessAction(const vector<string>& movesSet){
-  vector<pair<Chess, Action>> set;
-  for(string moves : movesSet){
-    Chess chess;
-    while(moves.size() != 0)
-    {    
-      string move = ExtractMove(moves);
-      Action act = ConvertToAction(move, chess);
-      pair<Chess, Action> pr;
-      pr.first = chess;
-      pr.second = act;
-      set.push_back(pr);
-      chess.play(act);
-    }
-  }
-  return set;
-}
-
-vector<int> ConvertPieceToVect(const int piece, const int couleur){
-  vector<int> vect = {0,0,0,0,0,0,0,0};
+coli ConvertPieceToVect(const int piece, const int couleur){
+  coli vect = {0,0,0,0,0,0,0,0};
   if(piece == VIDE)
     return vect;
   if(couleur == BLANC)
@@ -277,7 +277,37 @@ vector<int> ConvertPieceToVect(const int piece, const int couleur){
   return vect;
 }
 
-void CreateFile(const vector<pair<Chess, Action>>& statesSet, string filename){
+/*
+  Convertis l'ensemble des coups du dataset en matrice utilisable pour la phase d'entrainement du modèle
+  On passe la matrice par référence pour de pas avoir à copier le résultat de la fonction, la matrice est
+  énorma ça prendrait beaucoup de temps.
+*/
+
+void ConvertMovesSetToMat(const vector<string>& movesSet, arma::Mat<int>& mat){
+  for(string moves : movesSet){
+    Chess chess;
+    while(moves.size() != 0)
+    {    
+      string move = ExtractMove(moves);
+      Action act  = ConvertToAction(move, chess);
+      coli v; // vecteur image du plateau + action
+      for(int c = 0; c < CHESS_SIZE; c++)
+        for(int l = 0; l < CHESS_SIZE; l++)
+        {
+          coli pi = ConvertPieceToVect(chess.getCase(c,l).type, chess.getCase(c,l).couleur);
+          v = arma::join_cols(v, pi); //On concataine chaque case dans un seul vecteur
+        }
+      coli c_act = {act.c1, act.l1, act.c2, act.l2, chess.get_whoplays()};
+      v = arma::join_cols(v, c_act);
+      mat = arma::join_rows(mat, v); // On concatene la matrice avec le nouveau vecteur 
+      chess.play(act);
+    }
+  }
+}
+
+
+
+/*void CreateFile(const vector<pair<Chess, Action>>& statesSet, string filename){
   ofstream file;
   file.open(filename, ios::out);
   //Chess
@@ -286,7 +316,7 @@ void CreateFile(const vector<pair<Chess, Action>>& statesSet, string filename){
       for(int l = 0; l < CHESS_SIZE; l++){
         int piece = statesSet[i].first.getCase(c,l).type;
         int couleur = statesSet[i].first.getCase(c,l).couleur;
-        vector<int> vect = ConvertPieceToVect(piece, couleur);
+        vec vect = ConvertPieceToVect(piece, couleur);
         for(int j = 0; j < vect.size(); j++){
             file << vect[j] << ",";
         }
@@ -295,6 +325,6 @@ void CreateFile(const vector<pair<Chess, Action>>& statesSet, string filename){
   }
   //Action
   file.close();
-}
+}*/
 
 #endif

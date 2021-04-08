@@ -39,6 +39,18 @@ Fonctions à faire: pour chaque couleur
 - void SaveToFormatCSV(vector<Chess> partie) : sauvegarde l'ensemble des parties au format défini précédemment : plateau, pièce, colonne, ligne
 
 Convertir un pièce en vecteur:
- - [Pion, Cavalier, Tour, Fou, Dame, Roi, Noir, Blanc] -> Je test ça
+ - [Pion, Cavalier, Tour, Fou, Dame, Roi, Noir, Blanc] -> Je test ça, taille : 8
  - [Pion, Cavalier, Tour, Fou, Dame, Roi]
  - [PionB, CavalierB, TourB, FouB, DameB, RoiB, PionN, CavalierN, TourN, FouN, DameN, RoiN]
+
+ Les parties sont de elo >= 2500 ce qui donne un dataset de 8346 coups, si on a besoin de plus on baisse le elo minimum : ELO_MIN dans DataCSV.h
+ Je rajoute un bit de fin pour savoir quelle est la couleur de celui qui joue
+
+ Une ligne du dataset DataGmes.csv :
+ [[0,0,1,0,0,0,0,1], ...., [1,0,0,0,0,0,0,0]] + c1 l1 c2 l2 couleur (celui qui joue)
+  |_______8_______|
+|_____________________8*64__________________|
+
+à faire : 
+    - Pourquoi y a des -1 -> règle du en passant
+    - Ajouter le coup en passant et véridier le rook, pas sur de l'avoir bien implémenter
