@@ -38,7 +38,10 @@ vector<string> ExtractMovesSet(string filename){
           col[j].erase(i, 1);
         }
         else if(col[j][i] == 'x' || col[j][i] == '+' || col[j][i] == '#')
+        {
           col[j].erase(i, 1);
+          i--;
+        }
         else if(col[j][i] == '='){
           if(col[j][i + 1] != 'Q'){ //Si on transforme le pion en autre chose que la dame
             col.erase(it);
@@ -46,7 +49,10 @@ vector<string> ExtractMovesSet(string filename){
             it--;
           }
           else
+          {
             col[j].erase(i, 2);
+            i--;
+          }
         }
       }
     }
@@ -175,7 +181,7 @@ Action ConvertToAction(const string& move, Chess& chess){
     }
     else{ //Sinon c'est grand rook
       action.c1 = 3;
-      action.c2 = CHESS_SIZE - 2;
+      action.c2 = CHESS_SIZE - 3;
       action.l1 = action.l2 = (chess.get_whoplays() == BLANC?0:CHESS_SIZE-1);
       return action;
     }
@@ -188,7 +194,7 @@ Action ConvertToAction(const string& move, Chess& chess){
       action.c1 = c1;
       action.l1 = action.l2 - (chess.get_whoplays() == BLANC ? 1 : -1);
       //Faire le cas où le pion bouge de 2 case en avant
-      if(chess.getCase(action.c1, action.l1).type == PION && chess.getCase(action.c1, action.l1).couleur == (int)chess.get_whoplays())
+      if(chess.getCase(action.c1, action.l1).type == PION && chess.getCase(action.c1, action.l1).couleur == chess.get_whoplays())
         if(chess.play(action, true))
           return action;
     }
@@ -227,16 +233,30 @@ Action ConvertToAction(const string& move, Chess& chess){
     }
   }
   else{ //taille 4
- //Ambiguité sur une pièce autre que PION, ex : Nce4
+ //Ambiguité sur une pièce autre que PION, ex : Nce4 ou N1d2
     action.c2 = ConvertL(move[2]) - 1;
     action.l2 = ConvertI(move.back()) - 1;
-    action.c1 = ConvertL(move[1]) - 1;
-    int piece = ConvertP(move[0]);
-    for(int l = 0; l < CHESS_SIZE; l++){
-      action.l1 = l;
-      if(chess.getCase(action.c1, action.l1).type == piece && chess.getCase(action.c1, action.l1).couleur == chess.get_whoplays())
-        if(chess.play(action, true))
-          return action;
+    if(ConvertL(move[1]) != -1) //Le deuxième terme est une lettre
+    {
+      action.c1 = ConvertL(move[1]) - 1;
+      int piece = ConvertP(move[0]);
+      for(int l = 0; l < CHESS_SIZE; l++){
+        action.l1 = l;
+        if(chess.getCase(action.c1, action.l1).type == piece && chess.getCase(action.c1, action.l1).couleur == chess.get_whoplays())
+          if(chess.play(action, true))
+            return action;
+      }
+    }
+    else
+    {
+      action.l1 = ConvertI(move[1]) - 1;
+      int piece = ConvertP(move[0]);
+      for(int c = 0; c < CHESS_SIZE; c++){
+        action.c1 = c;
+        if(chess.getCase(action.c1, action.l1).type == piece && chess.getCase(action.c1, action.l1).couleur == chess.get_whoplays())
+          if(chess.play(action, true))
+            return action;
+      }
     }
   }
   return action;
@@ -286,10 +306,15 @@ coli ConvertPieceToVect(const int piece, const int couleur){
 void ConvertMovesSetToMat(const vector<string>& movesSet, arma::Mat<int>& mat){
   for(string moves : movesSet){
     Chess chess;
+    string t_moves = moves;
     while(moves.size() != 0)
     {    
       string move = ExtractMove(moves);
       Action act  = ConvertToAction(move, chess);
+      if(act.c1 < 0 || act.l1 < 0 || act.c1 < 0 || act.c2 < 0)
+      {
+        cout << t_moves << endl;
+      }
       coli v; // vecteur image du plateau + action
       for(int c = 0; c < CHESS_SIZE; c++)
         for(int l = 0; l < CHESS_SIZE; l++)

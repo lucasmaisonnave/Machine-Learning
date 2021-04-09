@@ -57,8 +57,9 @@ class AIGame : public PixelGameEngine
 	struct Rect LVL_DOWN;
 	v2d_generic<int> mousePos;
 
-
-  string move;
+	vector<string> movesSet;
+	string moves;
+  	string move;
 
 public:
 	AIGame()
@@ -101,7 +102,8 @@ public:
 		
 		//Actions possibles
 		//actions = ai.Actions(chess);
-
+		movesSet = ExtractMovesSet("./data/test.csv");
+		moves = movesSet[0];
 		//Init la souris
 		Csouris.couleur = NOIR;
 		Csouris.type = VIDE;
@@ -186,6 +188,13 @@ public:
 			//nb_coups = 0;
 			prec_action = { -1,-1,-1,-1 };
 			//actions = ai.Actions(chess);
+			moves = movesSet[0];
+		}
+		else if(GetKey(SPACE).bPressed && moves.size() != 0){
+			move = ExtractMove(moves);
+			Action act = ConvertToAction(move, chess);
+			chess.play(act);
+			prec_action = act;
 		}
 
 		//Première couche en blanc
@@ -261,21 +270,21 @@ public:
 
 int main()
 {
-	AIGame game;
+	/*AIGame game;
 	game.Construct(1080, 720, 1, 1);
-	game.Start();
+	game.Start();*/
 	/*arma::mat data;
 	data::Load("ChessStates.csv", data, true);
 	arma::cube c(data.memptr(), 5,5,5,false);*/
 
 	//Test de la création du fichier
-	/*cout << "Loading moves" << endl;
+	cout << "Loading moves" << endl;
 	vector<string> movesSet = ExtractMovesSet("./data/ChessGames.csv");
 	arma::Mat<int> mat;
 	cout << "Converting data in matrix" << endl;
 	ConvertMovesSetToMat(movesSet, mat);
 	cout << "Saving data" <<endl;
-	mlpack::data::Save("./data/DataGames.csv", mat);*/
+	mlpack::data::Save("./data/DataGames.csv", mat);
 	return 0;
 }
 

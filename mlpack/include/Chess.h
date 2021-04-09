@@ -38,23 +38,24 @@ public:
 											   {VIDE, VIDE, VIDE, VIDE, VIDE, VIDE, VIDE, VIDE},
 											   {NOIR, NOIR, NOIR, NOIR, NOIR, NOIR, NOIR, NOIR},
 											   {NOIR, NOIR, NOIR, NOIR, NOIR, NOIR, NOIR, NOIR} };
-	
-		/*int type[CHESS_SIZE][CHESS_SIZE] = { {VIDE, VIDE, VIDE, ROI, VIDE, VIDE, VIDE, VIDE},
-											{VIDE, VIDE, VIDE, VIDE, VIDE, VIDE, VIDE, VIDE},
-											{VIDE, VIDE, PION, VIDE, VIDE, VIDE, VIDE, VIDE},
-											{VIDE, VIDE, VIDE, VIDE, VIDE, VIDE, VIDE, VIDE},
-											{VIDE, VIDE, VIDE, VIDE, DAME, VIDE, VIDE, VIDE},
+		
+		/*
+		int type[CHESS_SIZE][CHESS_SIZE] = {{TOUR, VIDE, VIDE, ROI, VIDE, VIDE, VIDE, TOUR},
 											{VIDE, VIDE, VIDE, VIDE, VIDE, VIDE, VIDE, VIDE},
 											{VIDE, VIDE, VIDE, VIDE, VIDE, VIDE, VIDE, VIDE},
-											{ROI, VIDE, VIDE, VIDE, VIDE, VIDE, VIDE, VIDE} };
-		int couleur[CHESS_SIZE][CHESS_SIZE] = { {VIDE, VIDE, VIDE, BLANC, VIDE, VIDE, VIDE, VIDE},
+											{VIDE, VIDE, VIDE, VIDE, VIDE, VIDE, VIDE, VIDE},
+											{VIDE, VIDE, VIDE, VIDE, VIDE, VIDE, VIDE, VIDE},
+											{VIDE, VIDE, VIDE, VIDE, VIDE, VIDE, VIDE, VIDE},
+											{PION, PION, PION, PION, PION, PION, PION, PION},
+											{TOUR, CAVALIER, FOU, ROI, DAME, FOU, CAVALIER, TOUR}};
+		int couleur[CHESS_SIZE][CHESS_SIZE] = {{BLANC, VIDE, VIDE, BLANC, VIDE, VIDE, VIDE, BLANC},
 											   {VIDE, VIDE, VIDE, VIDE, VIDE, VIDE, VIDE, VIDE},
-											   {VIDE, VIDE, NOIR, VIDE, VIDE, VIDE, VIDE, VIDE},
-											   {VIDE, VIDE, VIDE, VIDE, VIDE, VIDE, VIDE, VIDE},
-											   {VIDE, VIDE, VIDE, VIDE, NOIR, VIDE, VIDE, VIDE},
 											   {VIDE, VIDE, VIDE, VIDE, VIDE, VIDE, VIDE, VIDE},
 											   {VIDE, VIDE, VIDE, VIDE, VIDE, VIDE, VIDE, VIDE},
-											   {NOIR, VIDE, VIDE, VIDE, VIDE, VIDE, VIDE, VIDE} };
+											   {VIDE, VIDE, VIDE, VIDE, VIDE, VIDE, VIDE, VIDE},
+											   {VIDE, VIDE, VIDE, VIDE, VIDE, VIDE, VIDE, VIDE},
+											   {NOIR, NOIR, NOIR, NOIR, NOIR, NOIR, NOIR, NOIR},
+											   {NOIR, NOIR, NOIR, NOIR, NOIR, NOIR, NOIR, NOIR} };
 		*/
 		for(int i = 0; i < CHESS_SIZE; i++)
 			for (int j = 0; j < CHESS_SIZE; j++)
@@ -178,14 +179,16 @@ public:
 			if ((plateau[l1][c1].couleur == NOIR && l2 == 0) || (plateau[l1][c1].couleur == BLANC && l2 == CHESS_SIZE - 1))
 				pion_dame = true;
 			//Maj du tab en passant
-			if((l1 == (couleur == BLANC ? 4 : 3) && abs(c1 - c2) == 1 && abs(l1 - l2) == 1 && getCase(c2,l2).type == VIDE && en_passant[!couleur][c2]) && !test)
-				plateau[l1][c2].type = VIDE;
-			for(int col = 0; col < 2; col++)
-				for(int c = 0; c < CHESS_SIZE; c++)
-					en_passant[col][c] = false;
-			if(abs(l1 - l2) == 2)
-				en_passant[couleur][c1] = true;
-
+			if(!test)
+			{
+				if((l1 == (couleur == BLANC ? 4 : 3) && abs(c1 - c2) == 1 && abs(l1 - l2) == 1 && getCase(c2,l2).type == VIDE && en_passant[!couleur][c2]))
+					plateau[l1][c2].type = VIDE;
+				for(int col = 0; col < 2; col++)
+					for(int c = 0; c < CHESS_SIZE; c++)
+						en_passant[col][c] = false;
+				if(abs(l1 - l2) == 2)
+					en_passant[couleur][c1] = true;
+			}
 			break;
 		case FOU:
 			//On v�rifie qu'il n'y a pas d'obstacle + on est sur la diagonale
@@ -222,25 +225,27 @@ public:
 				return false;
 			break;
 		case ROI:
-			//Test si on rock
+			//Test si on roque
 			int s = SGN(c2 - c1);
 			if (abs(c1 - c2) == 2 && (l1 == l2) && (l1 == (plateau[l1][c1].couleur == NOIR ? CHESS_SIZE - 1 : 0)) && !Roi_mov[plateau[l1][c1].couleur] && !Tour_mov[plateau[l1][c1].couleur][s > 0 ? 1 : 0])
 			{
 				//Test des obstacles entre le roi et la tour
 				for (int c = c1 + s; c != (s > 0 ? CHESS_SIZE - 1 : 0); c += s)
-				{
 					if (plateau[l1][c].type != VIDE)
-					{
 						return false;
-					}
-				}
+
 				//Test des menaces, ici on test aussi la case du roi et de la tour
-				for (int c = c1; c != (s > 0 ? CHESS_SIZE - 1 : 0) + s; c += s)
+				if(SGN(c2 - c1) < 0) //petit roque
 				{
-					if (checkThreat(c, l1, plateau[l1][c1].couleur))
-					{
-						return false;
-					}
+					for (int c = c1; c >= 0; c -= 1)
+						if (checkThreat(c, l1, plateau[l1][c1].couleur))
+							return false;
+				}
+				else //Grand roque, la tour ainsi que sa case adjacente peuvent être menacés
+				{
+					for (int c = c1; c <= c1 + 2; c += 1)
+						if (checkThreat(c, l1, plateau[l1][c1].couleur))
+							return false;
 				}
 				//On met la tour � c�t� du roi
 				if (!test) 
