@@ -155,7 +155,7 @@ public:
 			return false;
 		if (plateau[l1][c1].type == VIDE || (l1 == l2 && c1 == c2) || (plateau[l2][c2].type != VIDE && plateau[l2][c2].couleur == plateau[l1][c1].couleur))
 			return false;
-
+		int couleur = getCase(c1,l1).couleur; //Pour le PION uniquement
 		switch (plateau[l1][c1].type)
 		{
 		case PION:
@@ -165,13 +165,27 @@ public:
 			//On bouge pas le pion � plus de 2 cases
 			if (abs(l1 - l2) > 2)
 				return false;
+			
 			//On autorise de bouger de 1 en diagonale s'il y a un pion adverse, on peut bouger de 1 vers le haut s'il n'y a pas d'obstacle 
 			//et on peut bouger de 2 vers le haut si le pion est sur sa case de d�part et qu'il n'y pas de pion sur la case vis�
-			if (!((abs(c1 - c2) == 1 && abs(l1 - l2) == 1 && plateau[l2][c2].type != VIDE) || (abs(c1 - c2) == 0 && abs(l1 - l2) == 1 && plateau[l2][c2].type == VIDE) || (abs(c1 - c2) == 0 && abs(l1 - l2) == 2 && (((plateau[l1][c1].couleur == NOIR && l1 == CHESS_SIZE - 2) || (plateau[l1][c1].couleur == BLANC && l1 == 1)) && plateau[l2][c2].type == VIDE && plateau[l2 - SGN(l2 - l1)][c2].type == VIDE))))
+			//En passant
+			if (!((abs(c1 - c2) == 1 && abs(l1 - l2) == 1 && plateau[l2][c2].type != VIDE) || 
+				(abs(c1 - c2) == 0 && abs(l1 - l2) == 1 && plateau[l2][c2].type == VIDE) || 
+				(abs(c1 - c2) == 0 && abs(l1 - l2) == 2 && (((plateau[l1][c1].couleur == NOIR && l1 == CHESS_SIZE - 2) || (plateau[l1][c1].couleur == BLANC && l1 == 1)) && plateau[l2][c2].type == VIDE && plateau[l2 - SGN(l2 - l1)][c2].type == VIDE)) ||
+				(l1 == (couleur == BLANC ? 4 : 3) && abs(c1 - c2) == 1 && abs(l1 - l2) == 1 && getCase(c2,l2).type == VIDE && en_passant[!couleur][c2])))
 				return false;
 			//On test si le pion est sur la derni�re ligne, on le transforme en Dame
 			if ((plateau[l1][c1].couleur == NOIR && l2 == 0) || (plateau[l1][c1].couleur == BLANC && l2 == CHESS_SIZE - 1))
 				pion_dame = true;
+			//Maj du tab en passant
+			if((l1 == (couleur == BLANC ? 4 : 3) && abs(c1 - c2) == 1 && abs(l1 - l2) == 1 && getCase(c2,l2).type == VIDE && en_passant[!couleur][c2]) && !test)
+				plateau[l1][c2].type = VIDE;
+			for(int col = 0; col < 2; col++)
+				for(int c = 0; c < CHESS_SIZE; c++)
+					en_passant[col][c] = false;
+			if(abs(l1 - l2) == 2)
+				en_passant[couleur][c1] = true;
+
 			break;
 		case FOU:
 			//On v�rifie qu'il n'y a pas d'obstacle + on est sur la diagonale
@@ -273,4 +287,5 @@ private:
 	bool Tour_mov[2][2] = { {false, false}, {false, false} };//(couleur, dir)
 	int Nb_Piece[2][6] = { {0,0,0,0,0,0}, {0,0,0,0,0,0}};//Nombre de pi�ces par type et couleur
 	int who_plays = BLANC;
+	bool en_passant[2][8] = { {false,false,false,false,false,false,false,false}, {false,false,false,false,false,false,false,false}};
 };

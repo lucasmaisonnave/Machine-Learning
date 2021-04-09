@@ -57,8 +57,7 @@ class AIGame : public PixelGameEngine
 	struct Rect LVL_DOWN;
 	v2d_generic<int> mousePos;
 
-  vector<string> movesSet;
-  string moves;
+
   string move;
 
 public:
@@ -102,8 +101,7 @@ public:
 		
 		//Actions possibles
 		//actions = ai.Actions(chess);
-		movesSet = ExtractMovesSet("./data/ChessGames.csv");
-		moves = movesSet[33];
+
 		//Init la souris
 		Csouris.couleur = NOIR;
 		Csouris.type = VIDE;
@@ -141,7 +139,7 @@ public:
 			if (PointInRect(mousePos, Plateau)) {
 				int x = AI_SIDE == BLANC ? (mousePos.x - x0) / nsquare_size : CHESS_SIZE - 1 - (mousePos.x - x0) / nsquare_size;
 				int y = AI_SIDE == BLANC ? (mousePos.y - y0) / nsquare_size : CHESS_SIZE - 1 - (mousePos.y - y0) / nsquare_size;
-				if (chess.getCase(x, y).couleur != AI_SIDE && start) { //
+				if (start) { //chess.getCase(x, y).couleur != AI_SIDE && 
 					pos_souris_prec.x = x;
 					pos_souris_prec.y = y;
 					Csouris = chess.getCase(x, y);
@@ -183,19 +181,12 @@ public:
 		else if (GetMouse(1).bPressed)//Clic droit => reset
 		{
 			chess = Chess();
-      		moves = movesSet[0];
 			AI_PLAY = AI_SIDE == BLANC ? 1 : 0;
 			start = end = false;
 			//nb_coups = 0;
 			prec_action = { -1,-1,-1,-1 };
 			//actions = ai.Actions(chess);
 		}
-    	else if(GetKey(SPACE).bPressed && moves.size() != 0){
-			move = ExtractMove(moves);
-     		Action act = ConvertToAction(move, chess);
-			prec_action = act;
-      		chess.play(act);
-    	}
 
 		//Première couche en blanc
 		FillRect(0, 0, ScreenWidth(), ScreenHeight(), WHITE);
@@ -270,21 +261,21 @@ public:
 
 int main()
 {
-	/*AIGame game;
+	AIGame game;
 	game.Construct(1080, 720, 1, 1);
-	game.Start();*/
+	game.Start();
 	/*arma::mat data;
 	data::Load("ChessStates.csv", data, true);
 	arma::cube c(data.memptr(), 5,5,5,false);*/
 
 	//Test de la création du fichier
-	cout << "Loading moves" << endl;
+	/*cout << "Loading moves" << endl;
 	vector<string> movesSet = ExtractMovesSet("./data/ChessGames.csv");
 	arma::Mat<int> mat;
 	cout << "Converting data in matrix" << endl;
 	ConvertMovesSetToMat(movesSet, mat);
 	cout << "Saving data" <<endl;
-	mlpack::data::Save("./data/DataGames.csv", mat);
+	mlpack::data::Save("./data/DataGames.csv", mat);*/
 	return 0;
 }
 
