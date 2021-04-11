@@ -54,3 +54,16 @@ Convertir un pièce en vecteur:
 à faire : 
     - Pourquoi y a des -1 -> règle du en passant
     - Ajouter le coup en passant et véridier le rook, pas sur de l'avoir bien implémenter
+
+Matrice d'entrée du CNN : un transforme un ligne du dataset en matrice 2D 64x8
+                                            _
+[[0,0,1,0,0,0,0,1], ...., [1,0,0,0,0,0,0,0]] |
+ |_______8_______|                           |
+|_____________________8*8__________________| |
+                                             8
+                                             |
+                                             |
+                                            _|
+                                            
+Idée pour le Split : 
+Refaire un Split(X,y) pour chaque modèle : y_c1, y_l1, y_c2, y_l2
