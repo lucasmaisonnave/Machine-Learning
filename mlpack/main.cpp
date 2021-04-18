@@ -10,28 +10,21 @@
 #include <mlpack/methods/ann/regularizer/regularizer.hpp>
 #include <ensmallen.hpp>
 
-using namespace mlpack;
+#include "./include/Chess.h"
+#include "./include/DataCSV.h"
+#include "./include/ChessGame.h"
+
 using namespace arma;
 using namespace mlpack;
 using namespace mlpack::ann;
-
+using namespace olc;
+using namespace DataCSV;
 using namespace std;
-
 using namespace ens;
 //using namespace mlpack::neighbor; // NeighborSearch and NearestNeighborSort
 //using namespace mlpack::metric; // ManhattanDistance
 
-#include "./include/Chess.h"
-#include "./include/DataCSV.h"
-#include "./include/ChessGame.h"
-using namespace olc;
-using namespace std;
-using namespace DataCSV;
-
 #define FILE_NAME "./data/DataGames.csv"
-#ifndef DARMA_64BIT_WORD	
-	#define DARMA_64BIT_WORD 1
-#endif
 
 /*
 	La sortie du modèle étant un vecteur de taille 10 avec 1 proba pour chaque noeud on prend la plus élevé
@@ -250,9 +243,3 @@ int main()
 	//DataCSV::CreateDataset(2300);
 	return 0;
 }
-
-/*int main()
-{
-  
-  return 0;
-}*/
