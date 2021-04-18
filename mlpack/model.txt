@@ -1,0 +1,68 @@
+// Layers schema.
+	// 64x8x1 --- conv (6 filters of size 3x3. stride = 1)  ---> 62x6x6
+	// 62x6x6 --------------- Leaky ReLU  ---------------------> 62x6x6
+	// 62x6x6 --- max pooling (over 2x2 fields. stride = 2)  --> 31x3x6
+	// 31x3x6 --- conv (16 filters of size 3x3. stride = 1)  --> 30x2x16
+	// 30x2x16 --------------- Leaky ReLU ---------------------> 30x2x16
+	// 30x2x16 --- max pooling (over 2x2 fields. stride = 1) --> 30x2x16
+	// 30x2x16  ------------------- Dense ----------------------> 8
+
+	FFN<NegativeLogLikelihood<>, RandomInitialization> model;
+
+	model.Add<Convolution<>>(1,  // Number of input activation maps.
+                           6,  // Number of output activation maps.
+                           3,  // Filter width.
+                           3,  // Filter height.
+                           1,  // Stride along width.
+                           1,  // Stride along height.
+                           0,  // Padding width.
+                           0,  // Padding height.
+						   8*TAILLE_HOT_VECT  ,  // Input width.
+						   8 // Input height.
+  	);
+	  /* Add first ReLU.*/
+  	model.Add<LeakyReLU<>>();
+
+  	// Add first pooling layer. Pools over 2x2 fields in the input.
+  	model.Add<MaxPooling<>>(2, // Width of field.
+                          	2, // Height of field.
+                          	2, // Stride along width.
+                          	2, // Stride along height.
+                          	true);
+
+  	// Add the second convolution layer.
+  	model.Add<Convolution<>>(6,  // Number of input activation maps.
+                           	16, // Number of output activation maps.
+                          	5,  // Filter width.
+                           	5,  // Filter height.
+                           	1,  // Stride along width.
+                           	1,  // Stride along height.
+                           	0,  // Padding width.
+                           	0,  // Padding height.
+                           	31, // Input width.
+                           	3  // Input height.
+  	);
+
+  	// Add the second ReLU.
+  	model.Add<LeakyReLU<>>();
+
+  	// Add the second pooling layer.
+  	model.Add<MaxPooling<>>(2, 2, 2, 2, true);
+
+	// Add the final dense layer.
+	model.Add<Linear<>>(16 * 2 * 30, 8);
+	model.Add<LogSoftMax<>>();
+
+//Modèle 2 : marche pas bien
+/*
+		Que des couches denses pour l'instant : 
+		entrée 512x1 puis 2 couches à 32 noeuds puis une sortie en softmax à 10
+	*/
+	FFN<NegativeLogLikelihood<>, GlorotInitialization> model;
+	model.Add<Linear<>>(X_train.n_rows, 32);
+  	model.Add<ReLULayer<>>();
+	model.Add<Linear<>>(32, 32);
+  	model.Add<ReLULayer<>>();
+	model.Add<Dropout<>>(0.2);
+	model.Add<Linear<>>(32, 8);
+	model.Add<LogSoftMax<>>();

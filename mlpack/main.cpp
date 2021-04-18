@@ -6,6 +6,8 @@
 #include <map>
 #include <mlpack/methods/ann/layer/layer.hpp>
 #include <mlpack/methods/ann/ffn.hpp>
+#include <mlpack/methods/ann/init_rules/glorot_init.hpp>
+#include <mlpack/methods/ann/regularizer/regularizer.hpp>
 #include <ensmallen.hpp>
 
 using namespace mlpack;
@@ -26,6 +28,11 @@ using namespace olc;
 using namespace std;
 using namespace DataCSV;
 
+#define FILE_NAME "./data/DataGames.csv"
+#ifndef DARMA_64BIT_WORD	
+	#define DARMA_64BIT_WORD 1
+#endif
+
 /*
 	La sortie du modèle étant un vecteur de taille 10 avec 1 proba pour chaque noeud on prend la plus élevé
 */
@@ -43,7 +50,9 @@ arma::Row<size_t> getLabels(arma::mat predOut)
 
 int main()
 {
-	int r_split = 0.2;
+	//CreateDataset(2300);
+
+	const float r_split = 0.2;
 
 	// Allow infinite number of iterations until we stopped by EarlyStopAtMinLoss
 	constexpr int MAX_ITERATIONS = 0;
@@ -66,44 +75,57 @@ int main()
 	rowvec y_l2;
 
 	rowvec couleur;
-	data::Load("./data/test.csv", data, true);
-	//cout << data << endl;
-	//SplitXy(data, X, y_c1, y_l1, y_c2, y_l2, couleur);
+	cout << "Loading file" << endl;
+	data::Load(FILE_NAME, data, true);
+
 	X = data.submat(0,0, data.n_rows - 6, data.n_cols - 1);
 	y_c1 = data.row(data.n_rows - 5);
 	y_l1 = data.row(data.n_rows - 4);
 	y_c2 = data.row(data.n_rows - 3);
 	y_l2 = data.row(data.n_rows - 2);
 	couleur = data.row(data.n_rows - 1);
-	cout << X.n_cols << " " << X.n_rows << endl;
-	//cout << X << endl;
+	//Le vecteur des labels doit commencer à 1	
+	for(size_t i = 0; i < y_c1.n_cols; i++){
+		y_c1(i) = y_c1(i) + 1;
+		y_l1(i) = y_l1(i) + 1;
+		y_c2(i) = y_c2(i) + 1;
+		y_l2(i) = y_l2(i) + 1;
+	}
+	/*
+	 	On prend uniquement les coups des blancs
+	*/
+	arma::mat X_blanc;
+	arma::rowvec y_c1_blanc;
+	for(size_t i = 0; i < X.n_cols; i++)
+		if(couleur(i) == 1){
+			X_blanc = arma::join_rows(X_blanc, X.col(i));
+			arma::rowvec uw(1) ;
+			uw(0) = y_c1(i);
+			y_c1_blanc = arma::join_rows(y_c1_blanc, uw);
+		}
 	//Train set
 	arma::mat X_train;
 	rowvec y_c1_train;
 	rowvec y_l1_train;
 	rowvec y_c2_train;
 	rowvec y_l2_train;
-	rowvec coul_train;
 	//Test set
 	arma::mat X_test;
 	rowvec y_c1_test;
 	rowvec y_l1_test;
 	rowvec y_c2_test;
 	rowvec y_l2_test;
-	rowvec coul_test;
 	
 	//Modèle pour y_c1
-
-	mlpack::data::Split(X, y_c1, X_train, X_test, y_c1_train, y_c1_test, r_split);
-
+	mlpack::data::Split(X_blanc, y_c1_blanc, X_train, X_test, y_c1_train, y_c1_test, r_split);
 	// Layers schema.
-	// 64x8x1 --- conv (6 filters of size 3x3. stride = 1)  ---> 62x6x6
-	// 62x6x6 --------------- Leaky ReLU  ---------------------> 62x6x6
-	// 62x6x6 --- max pooling (over 2x2 fields. stride = 2)  --> 31x3x6
-	// 31x3x6 --- conv (16 filters of size 3x3. stride = 1)  --> 30x2x16
-	// 30x2x16 --------------- Leaky ReLU ---------------------> 30x2x16
-	// 30x2x16 --- max pooling (over 2x2 fields. stride = 1) --> 30x2x16
-	// 30x2x16  ------------------- Dense ----------------------> 8
+	// 96x8x1 --- conv (6 filters of size 3x3. stride = 1)  ---> 94x6x6
+	// 94x6x6 --------------- Leaky ReLU  ---------------------> 94x6x6
+	// 94x6x6 --- max pooling (over 2x2 fields. stride = 2)  --> 47x3x6
+	// 47x3x6 --- conv (16 filters of size 3x3. stride = 1)  --> 45x2x16
+	// 45x2x16 --------------- Leaky ReLU ---------------------> 45x2x16
+	// 45x2x16 --- max pooling (over 2x2 fields. stride = 1) --> 45x2x16
+	// 45x2x16  ------------------- Dense ----------------------> 8
 
 	FFN<NegativeLogLikelihood<>, RandomInitialization> model;
 
@@ -115,8 +137,8 @@ int main()
                            1,  // Stride along height.
                            0,  // Padding width.
                            0,  // Padding height.
-						   8,  // Input width.
-						   8*TAILLE_HOT_VECT   // Input height.
+						   8*TAILLE_HOT_VECT  ,  // Input width.
+						   8 // Input height.
   	);
 	  /* Add first ReLU.*/
   	model.Add<LeakyReLU<>>();
@@ -137,8 +159,8 @@ int main()
                            	1,  // Stride along height.
                            	0,  // Padding width.
                            	0,  // Padding height.
-                           	3, // Input width.
-                           	31  // Input height.
+                           	31, // Input width.
+                           	3  // Input height.
   	);
 
   	// Add the second ReLU.
@@ -146,11 +168,10 @@ int main()
 
   	// Add the second pooling layer.
   	model.Add<MaxPooling<>>(2, 2, 2, 2, true);
-
 	// Add the final dense layer.
 	model.Add<Linear<>>(16 * 2 * 30, 8);
 	model.Add<LogSoftMax<>>();
-
+	
 	cout << "Start training ..." << endl;
 
 	// Set parameters for the Adam optimizer.
@@ -168,6 +189,8 @@ int main()
 	// Train the CNN model. If this is the first iteration, weights are
 	// randomly initialized between -1 and 1. Otherwise, the values of weights
 	// from the previous iteration are used.
+	cout << X_train.n_cols << endl;
+	cout << y_c1_train.n_cols << endl;
 	model.Train(X_train,
 				y_c1_train,
 				optimizer,
@@ -188,8 +211,7 @@ int main()
 	model.Predict(X_train, predOut);
 	// Calculate accuracy on training data points.
 	arma::Row<size_t> predLabels = getLabels(predOut);
-	double trainAccuracy =
-		arma::accu(predLabels == y_c1_train) / (double) y_c1_train.n_elem * 100;
+	double trainAccuracy = arma::accu(predLabels == y_c1_train) / (double) y_c1_train.n_elem * 100;
 	// Get predictions on validating data points.
 	model.Predict(X_test, predOut);
 	// Calculate accuracy on validating data points.

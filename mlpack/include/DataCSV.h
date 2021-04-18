@@ -12,7 +12,7 @@ typedef Col <int> coli;
 typedef Row <int> rowi;
 typedef Mat<int> mati;
 
-#define TAILLE_HOT_VECT 8
+#define TAILLE_HOT_VECT 12
 
 namespace DataCSV{
   vector<string> ExtractMovesSet(string filename, int elo_min){
@@ -21,7 +21,7 @@ namespace DataCSV{
     std::vector<int> col_elo = doc.GetColumn<int>("White Elo");
     vector<std::string>::iterator it = col.begin();
     vector<int>::iterator it_elo = col_elo.begin();
-    for(int j = 0; j < col.size(); j++, it++, it_elo++){
+    for(size_t j = 0; j < col.size(); j++, it++, it_elo++){
       if(col_elo[j] < elo_min){
         col.erase(it);
         col_elo.erase(it_elo);
@@ -31,7 +31,7 @@ namespace DataCSV{
       }
       else{
         col[j].erase(0,3);
-        for(int i = 0; i < col[j].size(); i++){
+        for(size_t i = 0; i < col[j].size(); i++){
           if(col[j][i] == '.'){
             while(col[j][i] != ' '){
               col[j].erase(i, 1);
@@ -265,37 +265,57 @@ namespace DataCSV{
   }
 
   coli ConvertPieceToVect(const int piece, const int couleur){
-    coli vect = {0,0,0,0,0,0,0,0};
-    if(piece == VIDE)
-      return vect;
-    if(couleur == BLANC)
-      vect[7] = 1;
-    else
-      vect[6] = 1;
-
     
-    switch(piece){
-      case PION:
-        vect[0] = 1;
-        break;
-      case DAME:
-        vect[4] = 1;
-        break;
-      case TOUR:
-        vect[2] = 1;
-        break;
-      case FOU:
-        vect[3] = 1;
-        break;
-      case ROI:
-        vect[5] = 1;
-        break;
-      case CAVALIER:
-        vect[1] = 1;
-        break;
-      default:
-        break;
+    if(couleur == BLANC && piece == PION){
+      coli vect = {1,0,0,0,0,0,0,0,0,0,0,0};
+      return vect;
     }
+    else if(couleur == BLANC && piece == CAVALIER){
+      coli vect = {0,1,0,0,0,0,0,0,0,0,0,0};
+      return vect;
+    }
+    else if(couleur == BLANC && piece == FOU){
+      coli vect = {0,0,1,0,0,0,0,0,0,0,0,0};
+      return vect;
+    }
+    else if(couleur == BLANC && piece == TOUR){
+      coli vect = {0,0,0,1,0,0,0,0,0,0,0,0};
+      return vect;
+    }
+    else if(couleur == BLANC && piece == DAME){
+      coli vect = {0,0,0,0,1,0,0,0,0,0,0,0};
+      return vect;
+    }
+    else if(couleur == BLANC && piece == ROI){
+      coli vect = {0,0,0,0,0,1,0,0,0,0,0,0};
+      return vect;
+    }
+
+    if(couleur == NOIR && piece == PION){
+      coli vect = {0,0,0,0,0,0,1,0,0,0,0,0};
+      return vect;
+    }
+    else if(couleur == NOIR && piece == CAVALIER){
+      coli vect = {0,0,0,0,0,0,0,1,0,0,0,0};
+      return vect;
+    }
+    else if(couleur == NOIR && piece == FOU){
+      coli vect = {0,0,0,0,0,0,0,0,1,0,0,0};
+      return vect;
+    }
+    else if(couleur == NOIR && piece == TOUR){
+      coli vect = {0,0,0,0,0,0,0,0,0,1,0,0};
+      return vect;
+    }
+    else if(couleur == NOIR && piece == DAME){
+      coli vect = {0,0,0,0,0,0,0,0,0,0,1,0};
+      return vect;
+    }
+    else if(couleur == NOIR && piece == ROI){
+      coli vect = {0,0,0,0,0,0,0,0,0,0,0,1};
+      return vect;
+    }
+    coli vect = {0,0,0,0,0,0,0,0,0,0,0,0};
     return vect;
   }
 

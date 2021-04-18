@@ -4,8 +4,8 @@
 
 # Compiler settings - Can be customized.
 CC = g++
-CXXFLAGS = -std=c++17 -Wall -g
-LDFLAGS = -larmadillo -lmlpack -fopenmp -lboost_serialization -lX11 -lGL -lpthread -lstdc++fs -lpng
+CXXFLAGS = -std=c++17 -Wall -g -fopenmp -DMKL_ILP64 -m64
+LDFLAGS = -larmadillo -lmlpack -lboost_serialization -lX11 -lGL -lpthread -lstdc++fs -lpng
 
 # Makefile settings - Can be customized.
 APPNAME = mlapp
@@ -44,7 +44,7 @@ $(APPNAME): $(OBJ)
 
 # Building rule for .o files and its .c/.cpp in combination with all .h
 $(OBJDIR)/%.o: $(SRCDIR)/%$(EXT)
-	$(CC) $(CXXFLAGS) -o $@ -c $< -fopenmp
+	$(CC) $(CXXFLAGS) -o $@ -c $< 
 
 ################### Cleaning rules for Unix-based OS ###################
 # Cleans complete project

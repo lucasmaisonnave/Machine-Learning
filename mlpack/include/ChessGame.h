@@ -229,7 +229,7 @@ public:
 			FillRect(x0 + (AI_SIDE == BLANC ? prec_action.c2 : CHESS_SIZE - 1 - prec_action.c2) * nsquare_size, y0 + (AI_SIDE == BLANC ? prec_action.l2 : CHESS_SIZE - 1 - prec_action.l2) * nsquare_size, nsquare_size, nsquare_size, BLUE);
 		}
 		//Draw possible plays
-		for(int i = 0; i < actions.size(); i++)
+		for(size_t i = 0; i < actions.size(); i++)
 		{
 			if(actions[i].c1 == pos_souris_prec.x && actions[i].l1 == pos_souris_prec.y){
 				FillRect(x0 + (AI_SIDE == BLANC ? actions[i].c1 : CHESS_SIZE - 1 - actions[i].c1) * nsquare_size, y0 + (AI_SIDE == BLANC ? actions[i].l1 : CHESS_SIZE - 1 - actions[i].l1) * nsquare_size, nsquare_size, nsquare_size, DARK_RED);
