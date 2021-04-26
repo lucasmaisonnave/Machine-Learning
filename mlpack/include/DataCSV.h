@@ -1,21 +1,24 @@
 #ifndef DATACSV_H
 #define DATACSV_H
 #include <iostream>
+#include <fstream>
 #include <string>
 #include <map>
 #include <mlpack/core.hpp>
 #include "rapidcsv.h"
 #include "Chess.h"
 using namespace rapidcsv;
-
+using namespace arma;
+using namespace std;
 typedef Col <int> coli;
 typedef Row <int> rowi;
 typedef Mat<int> mati;
 
 #define TAILLE_HOT_VECT 12
 
+
 namespace DataCSV{
-  vector<string> ExtractMovesSet(string filename, int elo_min){
+  vector<string> ExtractMovesSet(const string& filename, int elo_min){
     rapidcsv::Document doc(filename); 
     std::vector<std::string> col = doc.GetColumn<std::string>("Moves");
     std::vector<int> col_elo = doc.GetColumn<int>("White Elo");
@@ -354,11 +357,7 @@ namespace DataCSV{
     cout << "Converting data in matrix" << endl;
     DataCSV::ConvertMovesSetToMat(movesSet, mat);
     cout << "Saving data" << endl;
-    mlpack::data::Save("./data/DataGames.csv", mat);
+    mlpack::data::Save("./data/ChessGames.csv", mat);
   }
-  
-
-
-
 }
 #endif

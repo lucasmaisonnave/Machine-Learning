@@ -4,7 +4,7 @@
 
 # Compiler settings - Can be customized.
 CC = g++
-CXXFLAGS = -std=c++17 -Wall -g -fopenmp -DMKL_ILP64 -m64
+CXXFLAGS = -std=c++17 -Wall -g -fopenmp
 LDFLAGS = -larmadillo -lmlpack -lboost_serialization -lX11 -lGL -lpthread -lstdc++fs -lpng
 
 # Makefile settings - Can be customized.
