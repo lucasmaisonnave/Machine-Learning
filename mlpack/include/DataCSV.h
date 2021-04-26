@@ -24,6 +24,8 @@ namespace DataCSV{
     std::vector<int> col_elo = doc.GetColumn<int>("White Elo");
     vector<std::string>::iterator it = col.begin();
     vector<int>::iterator it_elo = col_elo.begin();
+
+    
     for(size_t j = 0; j < col.size(); j++, it++, it_elo++){
       if(col_elo[j] < elo_min){
         col.erase(it);
