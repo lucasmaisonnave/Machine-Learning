@@ -352,12 +352,12 @@ namespace DataCSV{
   }
   void CreateDataset(int elo_min){
     cout << "Loading moves" << endl;
-    vector<string> movesSet = DataCSV::ExtractMovesSet("./data/ChessGames.csv", elo_min);
+    vector<string> movesSet = DataCSV::ExtractMovesSet("./data/DataSet.csv", elo_min);
     arma::Mat<int> mat;
     cout << "Converting data in matrix" << endl;
     DataCSV::ConvertMovesSetToMat(movesSet, mat);
     cout << "Saving data" << endl;
-    mlpack::data::Save("./data/ChessGames.csv", mat);
+    mlpack::data::Save("./data/DataSet_processed.csv", mat);
   }
 }
 #endif

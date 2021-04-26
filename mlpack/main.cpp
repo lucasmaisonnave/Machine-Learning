@@ -43,6 +43,7 @@ arma::Row<size_t> getLabels(arma::mat predOut)
 
 int main(int argc, char* argv[])
 {
+  //Ranking rate
 	CreateDataset(atoi(argv[1]));
 
 	
