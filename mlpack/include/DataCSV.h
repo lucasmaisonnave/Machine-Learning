@@ -20,51 +20,45 @@ typedef Mat<int> mati;
 namespace DataCSV{
   vector<string> ExtractMovesSet(const string& filename, int elo_min){
     rapidcsv::Document doc(filename); 
-    std::vector<std::string> col = doc.GetColumn<std::string>("Moves");
-    std::vector<int> col_elo = doc.GetColumn<int>("White Elo");
-    vector<std::string>::iterator it = col.begin();
-    vector<int>::iterator it_elo = col_elo.begin();
-
-    
-    for(size_t j = 0; j < col.size(); j++, it++, it_elo++){
+    vector<string> col_moves = doc.GetColumn<string>("Moves");
+    vector<int> col_elo = doc.GetColumn<int>("White Elo");
+    for(size_t j = 0; j < col_moves.size(); j++){
       if(col_elo[j] < elo_min){
-        col.erase(it);
-        col_elo.erase(it_elo);
+        col_moves.erase(col_moves.begin() + j);
+        col_elo.erase(col_elo.begin() + j);
         j--;
-        it--;
-        it_elo--;
       }
       else{
-        col[j].erase(0,3);
-        for(size_t i = 0; i < col[j].size(); i++){
-          if(col[j][i] == '.'){
-            while(col[j][i] != ' '){
-              col[j].erase(i, 1);
+        col_moves[j].erase(0,3);
+        for(size_t i = 0; i < col_moves[j].size(); i++){
+          if(col_moves[j][i] == '.'){
+            while(col_moves[j][i] != ' '){
+              col_moves[j].erase(col_moves[j].begin() + i);
               i--;
             }
-            col[j].erase(i, 1);
+            col_moves[j].erase(col_moves[j].begin() + i);
           }
-          else if(col[j][i] == 'x' || col[j][i] == '+' || col[j][i] == '#')
+          else if(col_moves[j][i] == 'x' || col_moves[j][i] == '+' || col_moves[j][i] == '#')
           {
-            col[j].erase(i, 1);
+            col_moves[j].erase(col_moves[j].begin() + i);
             i--;
           }
-          else if(col[j][i] == '='){
-            if(col[j][i + 1] != 'Q'){ //Si on transforme le pion en autre chose que la dame
-              col.erase(it);
+          else if(col_moves[j][i] == '='){
+            if(col_moves[j][i + 1] != 'Q'){ //Si on transforme le pion en autre chose que la dame on supprime parce que j'ai pas codé cette possibilité
+              col_moves.erase(col_moves.begin() + j);
               j--;
-              it--;
             }
             else
             {
-              col[j].erase(i, 2);
+              col_moves[j].erase(i, 2);
               i--;
             }
           }
         }
       }
     }
-    return col;
+    cout << "Nombre de parties à générer : " << col_moves.size() << endl;
+    return col_moves;
   }
   /*
     renvoie le premier coup de la pile moves et le supprime de moves
@@ -330,8 +324,12 @@ namespace DataCSV{
     énorma ça prendrait beaucoup de temps.
   */
 
-  void ConvertMovesSetToMat(const vector<string>& movesSet, arma::Mat<int>& mat){
+  void ConvertMovesSetToFile(const vector<string>& movesSet, const string filename){
+    ofstream file(filename, ios::trunc);
+    float nb_games = movesSet.size();
+    float cmpt = 1;
     for(string moves : movesSet){
+      cout << "Progress : " << (int) ((cmpt / nb_games) * 100) << "%\r" << flush;
       Chess chess;
       //string t_moves = moves;
       while(moves.size() != 0)
@@ -347,19 +345,28 @@ namespace DataCSV{
           }
         coli c_act = {act.c1, act.l1, act.c2, act.l2, chess.get_whoplays()};
         v = arma::join_cols(v, c_act);
-        mat = arma::join_rows(mat, v); // On concatene la matrice avec le nouveau vecteur 
+        //Save line
+        for(size_t i = 0; i < v.size(); i++){
+          if(i != v.size() - 1){
+            file << v[i] << ",";
+          }
+          else{
+            file << v[i] << endl;
+          }
+        }
         chess.play(act);
       }
+      cmpt++;
     }
+    cout << endl;
+    file.close();
   }
+
   void CreateDataset(int elo_min){
     cout << "Loading moves" << endl;
     vector<string> movesSet = DataCSV::ExtractMovesSet("./data/DataSet.csv", elo_min);
-    arma::Mat<int> mat;
-    cout << "Converting data in matrix" << endl;
-    DataCSV::ConvertMovesSetToMat(movesSet, mat);
     cout << "Saving data" << endl;
-    mlpack::data::Save("./data/DataSet_processed.csv", mat);
+    DataCSV::ConvertMovesSetToFile(movesSet, "./data/DataSet_processed.csv");
   }
 }
 #endif
