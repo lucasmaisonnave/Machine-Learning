@@ -16,16 +16,19 @@ typedef Mat<int> mati;
 
 #define TAILLE_HOT_VECT 12
 
+vector<string> col_winner;
 
 namespace DataCSV{
   vector<string> ExtractMovesSet(const string& filename, int elo_min){
     rapidcsv::Document doc(filename); 
     vector<string> col_moves = doc.GetColumn<string>("Moves");
     vector<int> col_elo = doc.GetColumn<int>("White Elo");
+    col_winner = doc.GetColumn<string>("Result-Winner");
     for(size_t j = 0; j < col_moves.size(); j++){
-      if(col_elo[j] < elo_min){
+      if(col_elo[j] < elo_min){// || col_winner[j] == "Draw"
         col_moves.erase(col_moves.begin() + j);
         col_elo.erase(col_elo.begin() + j);
+        col_winner.erase(col_winner.begin() + j);
         j--;
       }
       else{
@@ -46,6 +49,8 @@ namespace DataCSV{
           else if(col_moves[j][i] == '='){
             if(col_moves[j][i + 1] != 'Q'){ //Si on transforme le pion en autre chose que la dame on supprime parce que j'ai pas codé cette possibilité
               col_moves.erase(col_moves.begin() + j);
+              col_elo.erase(col_elo.begin() + j);
+              col_winner.erase(col_winner.begin() + j);
               j--;
             }
             else
@@ -328,10 +333,11 @@ namespace DataCSV{
     ofstream file(filename, ios::trunc);
     float nb_games = movesSet.size();
     float cmpt = 1;
-    for(string moves : movesSet){
+    for(size_t k = 0; k < movesSet.size(); k++){
+      string moves = movesSet[k];
       cout << "Progress : " << (int) ((cmpt / nb_games) * 100) << "%\r" << flush;
       Chess chess;
-      //string t_moves = moves;
+      int winner = col_winner[k] == "White" ? 1 : -1;
       while(moves.size() != 0)
       {    
         string move = ExtractMove(moves);
@@ -343,6 +349,8 @@ namespace DataCSV{
             coli pi = ConvertPieceToVect(chess.getCase(c,l).type, chess.getCase(c,l).couleur);
             v = arma::join_cols(v, pi); //On concataine chaque case dans un seul vecteur
           }
+        if(act.c1 < 0 || act.l1 < 0 || act.c2 < 0 || act.l2 < 0)
+          cout << movesSet[k] << endl;
         coli c_act = {act.c1, act.l1, act.c2, act.l2, chess.get_whoplays()};
         v = arma::join_cols(v, c_act);
         //Save line

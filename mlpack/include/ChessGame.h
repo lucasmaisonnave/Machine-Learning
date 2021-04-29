@@ -100,8 +100,8 @@ public:
 		
 		//Actions possibles
 		//actions = ai.Actions(chess);
-		movesSet = ExtractMovesSet("../data/test.csv", 2300);
-		moves = movesSet[0];
+		//movesSet = ExtractMovesSet("../data/test.csv", 2300);
+		moves = "d4 d5 c4 e6 Nc3 c6 e3 Nf6 Nf3 Nbd7 Bd3 Bb4 Qb3 Qa5 O-O Bc3 bc3 O-O Ba3 Re8 Bb4 Qa6 Rad1 Qb6 c5 Qc7 Qc2 e5 Nh4 e4 Be2 g5 Nf5 Nf8 Nd6 Re7 f4 Ng4 Qd2 a5 Ba3 f6 fg5 fg5 Rb1 Nh6 Qc2 Nf7 Bh5 Nh6 c4 dc4 Qc4 Be6 Qc2 Bc8 Ne4 Ng4 Bg4 Bg4 Nf6 Kh8 Ng4 h5 Ne5 Kg8 Qf5 Rg7 h4 gh4 Qh5 Qe7 Ng4 Rh7 Nh6 Kh8 Rb3 Qg7 Nf7 Kg8 Qe2 h3 Rb7 h2 Kh1 Re8 Nd6 Qb7 Nb7 Rb7 Kh2 Ng6 Rf6 Nf8 Rc6 Rbe7 Qc4 Rf7 Rf6 Re7 c6 Rc7 Qd5 Nh7 Rg6 Kh8 Qd8 Nf8 Bf8 Kh7 Rh6 Kg8 Bc5 Kg7 Qh8 ";
 		//Init la souris
 		Csouris.couleur = NOIR;
 		Csouris.type = VIDE;
