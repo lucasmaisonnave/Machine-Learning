@@ -218,9 +218,15 @@ namespace DataCSV{
         action.c1 = ConvertL(move[0]) - 1;
         for(int l1 = 0; l1 < CHESS_SIZE; l1++){
           action.l1 = l1;
-          if(chess.getCase(action.c1, action.l1).type == PION && chess.getCase(action.c1, action.l1).couleur == chess.get_whoplays())
-            if(chess.play(action, true))
-              return action;
+          if(chess.getCase(action.c1, action.l1).type == PION && chess.getCase(action.c1, action.l1).couleur == chess.get_whoplays()){
+            if(chess.play(action, true)){
+              Chess next_chess = chess;
+              next_chess.play(action);
+              int couleur_next = next_chess.get_whoplays();
+              if(!chess.checkThreat(chess.get_roi_pos(!couleur_next,0), chess.get_roi_pos(!couleur_next,1), !couleur_next))
+                return action;
+            }
+          }     
         }
       }
       else{ //C'est une autre pièce : B, N, R, Q, K
@@ -229,13 +235,20 @@ namespace DataCSV{
         int piece = ConvertP(move[0]);
         for(int c = 0; c < CHESS_SIZE; c++)
           for(int l = 0; l < CHESS_SIZE; l++)
-            if(chess.getCase(c, l).type == piece && chess.getCase(c, l).couleur == chess.get_whoplays())
+            if(chess.getCase(c, l).type == piece && chess.getCase(c, l).couleur == chess.get_whoplays()){
               if(chess.play(c, l, action.c2, action.l2, true))
               {
-                action.c1 = c;
-                action.l1 = l;
-                return action;
+                Chess next_chess = chess;
+                next_chess.play(c, l, action.c2, action.l2);
+                int couleur_next = next_chess.get_whoplays();
+                //On vérifie que le roi n'est pas en danger
+                if(!next_chess.checkThreat(next_chess.get_roi_pos(!couleur_next,0), next_chess.get_roi_pos(!couleur_next,1), !couleur_next)){
+                  action.c1 = c;
+                  action.l1 = l;
+                  return action;
+                }
               }
+            }
       }
     }
     else{ //taille 4
@@ -329,13 +342,12 @@ namespace DataCSV{
     énorma ça prendrait beaucoup de temps.
   */
 
-  void ConvertMovesSetToFile(const vector<string>& movesSet, const string filename){
+  void ConvertMovesSetToFile(const vector<string> movesSet, const string filename){
     ofstream file(filename, ios::trunc);
-    float nb_games = movesSet.size();
-    float cmpt = 1;
-    for(size_t k = 0; k < movesSet.size(); k++){
-      string moves = movesSet[k];
-      cout << "Progress : " << (int) ((cmpt / nb_games) * 100) << "%\r" << flush;
+    size_t nb_games = movesSet.size();
+    float k = 1;
+    for(string moves : movesSet){
+      cout << "Progress : " << (int) ((k / nb_games) * 100) << "%\r" << flush;
       Chess chess;
       int winner = col_winner[k] == "White" ? 1 : -1;
       while(moves.size() != 0)
@@ -349,8 +361,8 @@ namespace DataCSV{
             coli pi = ConvertPieceToVect(chess.getCase(c,l).type, chess.getCase(c,l).couleur);
             v = arma::join_cols(v, pi); //On concataine chaque case dans un seul vecteur
           }
-        if(act.c1 < 0 || act.l1 < 0 || act.c2 < 0 || act.l2 < 0)
-          cout << movesSet[k] << endl;
+        /*if(act.c1 < 0 || act.l1 < 0 || act.c2 < 0 || act.l2 < 0)
+          cout << movesSet[k] << endl;*/
         coli c_act = {act.c1, act.l1, act.c2, act.l2, chess.get_whoplays()};
         v = arma::join_cols(v, c_act);
         //Save line
@@ -364,7 +376,7 @@ namespace DataCSV{
         }
         chess.play(act);
       }
-      cmpt++;
+      k++;
     }
     cout << endl;
     file.close();
@@ -372,7 +384,7 @@ namespace DataCSV{
 
   void CreateDataset(int elo_min){
     cout << "Loading moves" << endl;
-    vector<string> movesSet = DataCSV::ExtractMovesSet("./data/DataSet.csv", elo_min);
+    const vector<string> movesSet = DataCSV::ExtractMovesSet("./data/DataSet.csv", elo_min);
     cout << "Saving data" << endl;
     DataCSV::ConvertMovesSetToFile(movesSet, "./data/DataSet_processed.csv");
   }

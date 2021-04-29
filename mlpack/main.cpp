@@ -44,8 +44,9 @@ arma::Row<size_t> getLabels(arma::mat predOut)
 int main(int argc, char* argv[])
 {
   //Ranking rate
-	//CreateDataset(atoi(argv[1]));
-  AIGame game;
-	
+	CreateDataset(atoi(argv[1]));
+  /*AIGame game;
+	game.Construct(1080, 720, 1, 1);
+  game.Start();*/
 	return 0;
 }
