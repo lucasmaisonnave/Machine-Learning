@@ -25,7 +25,7 @@ namespace DataCSV{
     vector<int> col_elo = doc.GetColumn<int>("White Elo");
     col_winner = doc.GetColumn<string>("Result-Winner");
     for(size_t j = 0; j < col_moves.size(); j++){
-      if(col_elo[j] < elo_min){// || col_winner[j] == "Draw"
+      if(col_elo[j] < elo_min || col_winner[j] == "Draw"){
         col_moves.erase(col_moves.begin() + j);
         col_elo.erase(col_elo.begin() + j);
         col_winner.erase(col_winner.begin() + j);
@@ -72,9 +72,9 @@ namespace DataCSV{
     string move;
     while(moves.front() != ' '){
       move.push_back(moves.front());
-      moves.erase(0,1);
+      moves.erase(moves.begin());
     }
-    moves.erase(0,1);
+    moves.erase(moves.begin());
     return move;
 
   }
@@ -223,7 +223,7 @@ namespace DataCSV{
               Chess next_chess = chess;
               next_chess.play(action);
               int couleur_next = next_chess.get_whoplays();
-              if(!chess.checkThreat(chess.get_roi_pos(!couleur_next,0), chess.get_roi_pos(!couleur_next,1), !couleur_next))
+              if(!next_chess.checkThreat(next_chess.get_roi_pos(!couleur_next,0), next_chess.get_roi_pos(!couleur_next,1), !couleur_next))
                 return action;
             }
           }     
@@ -337,21 +337,24 @@ namespace DataCSV{
   }
 
   /*
-    Convertis l'ensemble des coups du dataset en matrice utilisable pour la phase d'entrainement du modèle
-    On passe la matrice par référence pour de pas avoir à copier le résultat de la fonction, la matrice est
-    énorma ça prendrait beaucoup de temps.
+    Cette fonction bug à la fin : 
+    free(): invalid pointer
+    Aborted (core dumped)
+    mais je n'ai aucune idée de pourquoi, la variable movesSet qui est sensé être constante est modifié par je ne sais quelle magie
+    Ça n'empèche pas le programme de fonctionner et d'enregistrer les données mais c'est chiant parce que je comprends pas
   */
 
-  void ConvertMovesSetToFile(const vector<string> movesSet, const string filename){
+  void ConvertMovesSetToFile(const vector<string>& movesSet, const string filename){
+    vector<string> test = movesSet;
     ofstream file(filename, ios::trunc);
     size_t nb_games = movesSet.size();
-    float k = 1;
+    float k = 0;
     for(string moves : movesSet){
-      cout << "Progress : " << (int) ((k / nb_games) * 100) << "%\r" << flush;
+      cout << "Progress : " << (int) (((k + 1)/ nb_games) * 100) << "%\r" << flush;
       Chess chess;
       int winner = col_winner[k] == "White" ? 1 : -1;
       while(moves.size() != 0)
-      {    
+      {
         string move = ExtractMove(moves);
         Action act  = ConvertToAction(move, chess);
         coli v; // vecteur image du plateau + action
@@ -361,9 +364,7 @@ namespace DataCSV{
             coli pi = ConvertPieceToVect(chess.getCase(c,l).type, chess.getCase(c,l).couleur);
             v = arma::join_cols(v, pi); //On concataine chaque case dans un seul vecteur
           }
-        /*if(act.c1 < 0 || act.l1 < 0 || act.c2 < 0 || act.l2 < 0)
-          cout << movesSet[k] << endl;*/
-        coli c_act = {act.c1, act.l1, act.c2, act.l2, chess.get_whoplays()};
+        coli c_act = {act.c1, act.l1, act.c2, act.l2, chess.get_whoplays(), winner};
         v = arma::join_cols(v, c_act);
         //Save line
         for(size_t i = 0; i < v.size(); i++){

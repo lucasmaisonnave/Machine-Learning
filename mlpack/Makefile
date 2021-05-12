@@ -5,7 +5,7 @@
 # Compiler settings - Can be customized.
 CC = g++
 CXXFLAGS = -std=c++17 -Wall -g -fopenmp
-LDFLAGS = -larmadillo -lmlpack -lboost_serialization -lX11 -lGL -lpthread -lstdc++fs -lpng
+LDFLAGS = -larmadillo -lboost_serialization -lX11 -lGL -lpthread -lstdc++fs -lpng -ltensorflow-core-static
 
 # Makefile settings - Can be customized.
 APPNAME = mlapp

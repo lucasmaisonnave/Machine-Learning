@@ -24,20 +24,27 @@ nb_classes = 7
 df = read_csv(FILE_NAME, header = None)
 df = df[df[772] == BLANC]
 
+winner = np.array(df[773])
 X = df.loc[:, :767]
 X = np.array(X)
-X = X.reshape(len(X), 8, 8, 12)
-
-y = []
 ref = X[0] #Premier coup utile pour séparer les différentes parties dans le dataset
+y = []
+
 nb_mov = 1
 for i in range(1, len(X)):
-    if(X[i] != ref):
-        nb_mov++
+    if(not np.array_equal(X[i], ref)):
+        nb_mov += 1
+        if(i == (len(X) - 1)):
+            w = winner[i-1]
+            L = [w*(j+1)/nb_mov for j in range(nb_mov)]
+            y = np.concatenate((y, L), axis = 0)
     else:
+        w = winner[i-1]
+        L = [w*(j+1)/nb_mov for j in range(nb_mov)]
+        y = np.concatenate((y, L), axis = 0)
         nb_mov = 1
-        y += [nb_mov for j in range(nb_mov)]
 
+X = X.reshape(len(X), 8, 8, 12)
 
 
 y_c1 = df[768]
@@ -50,33 +57,40 @@ y_l2 = df[771]
 y_l2 = np.array(y_l2)
 
 
-X_train, X_test, y_c1_train, y_c1_test = sklearn.model_selection.train_test_split(X, y_c1, test_size=0.3, random_state = 42)
-y_c1_train = tf.one_hot(y_c1_train, nb_classes)
-y_c1_test = tf.one_hot(y_c1_test, nb_classes)
+X_train, X_test, y_train, y_test = sklearn.model_selection.train_test_split(X, y, test_size=0.3, random_state = 42)
+
 #%%
 print("Taille train set", len(X_train))
-model1 = Sequential()
+model = Sequential()
+model.add(Conv2D(filters=64, kernel_size=1, activation='relu', input_shape=(8,8,12)))
+model.add(MaxPooling2D())
+model.add(Conv2D(filters=24, kernel_size=1, activation='relu'))
+model.add(MaxPooling2D())
+model.add(Conv2D(filters=10, kernel_size=1, activation='relu'))
+model.add(Flatten())
+model.add(BatchNormalization())
+model.add(Dense(40,activation = 'relu'))
+model.add(Dense(1,activation = 'tanh'))
 
-model1.add(Conv2D(64, 3, strides = (2, 1), activation='relu', input_shape=(8, 8, 12)))
-model1.add(MaxPooling2D(pool_size=(2, 2), strides=None, padding="valid", data_format=None,))
-model1.add(Conv2D(32, 3, activation='relu'))
-model1.add(Flatten(data_format = None))
-model1.add(Dense(nb_classes, name = 'c1'))
-
-model = model1
 model.summary()
-model.compile(optimizer='Adam', loss='mse', metrics=["accuracy"])
+model.compile(optimizer='Adam', loss='mse', metrics=["mse"])
 #%%
 
 print('Training Network...')
 earlystop = keras.callbacks.EarlyStopping(monitor='loss', min_delta=0, patience=250, verbose=0, mode='auto', baseline=None, restore_best_weights=True)
-history = model.fit(X_train, y_c1_train, batch_size = batch_size, epochs = epochs, verbose = 2, validation_split=0.2, callbacks = [earlystop])
+history = model.fit(X_train, y_train, batch_size = batch_size, epochs = epochs, verbose = 2, validation_split=0.2, callbacks = [earlystop])
 
-test_scores = model.evaluate(X_test, y_c1_test, verbose = 2)
-print("Test accuracy : ", test_scores[1])
+test_scores = model.evaluate(X_test, y_test, verbose = 2)
 print("Test loss : ", test_scores[0])
 
-plt.plot(history.history['accuracy'])
+plt.plot(history.history['loss'], label = "train", c = "blue")
+plt.plot(history.history['val_loss'],label = "validation", c = "red")
+plt.xlabel("epochs")
+plt.ylabel("loss")
+plt.legend()
+plt.show()
+
+model.save("./models/model_h1", save_format='tf')
 
 
 

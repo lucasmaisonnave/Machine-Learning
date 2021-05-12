@@ -1,45 +1,37 @@
-#include <mlpack/core.hpp>
-#include <mlpack/core/data/split_data.hpp>
 #include <iostream>
 #include <string>
 #include <math.h>
 #include <map>
-#include <mlpack/methods/ann/layer/layer.hpp>
-#include <mlpack/methods/ann/ffn.hpp>
-#include <mlpack/methods/ann/init_rules/glorot_init.hpp>
-#include <mlpack/methods/ann/regularizer/regularizer.hpp>
-#include <ensmallen.hpp>
+#include <stdlib.h>
+#include <stdio.h>
+#include <tensorflow/c/c_api.h>
+/*
+#include <tensorflow/cc/client/client_session.h>
+#include <tensorflow/cc/ops/standard_ops.h>
+#include <tensorflow/cc/framework/gradients.h>
+#include <tensorflow/core/framework/tensor.h>
+#include <tensorflow/core/public/session.h>
+#include <tensorflow/core/lib/io/path.h>
+//#include <tensorflow/core/summary/summary_file_writer.h>
+#include <tensorflow/cc/tools/freeze_saved_model.h>
+//#include <tensorflow/contrib/image/image_ops.h>
+*/
 
 #include "./include/Chess.h"
 #include "./include/DataCSV.h"
 #include "./include/ChessGame.h"
 
-using namespace arma;
-using namespace mlpack;
-using namespace mlpack::ann;
 using namespace olc;
 using namespace DataCSV;
 using namespace std;
-using namespace ens;
 //using namespace mlpack::neighbor; // NeighborSearch and NearestNeighborSort
 //using namespace mlpack::metric; // ManhattanDistance
 
 #define FILE_NAME "./data/DataGames.csv"
 
-/*
-	La sortie du modèle étant un vecteur de taille 10 avec 1 proba pour chaque noeud on prend la plus élevé
-*/
 
-arma::Row<size_t> getLabels(arma::mat predOut)
-{
-  arma::Row<size_t> predLabels(predOut.n_cols);
-  for (arma::uword i = 0; i < predOut.n_cols; ++i)
-  {
-    predLabels(i) = predOut.col(i).index_max();
-  }
-  return predLabels;
-}
 
+void NoOpDeallocator(void* data, size_t a, void* b) {}
 
 int main(int argc, char* argv[])
 {
@@ -48,5 +40,26 @@ int main(int argc, char* argv[])
   /*AIGame game;
 	game.Construct(1080, 720, 1, 1);
   game.Start();*/
+  //********* Read model
+    TF_Graph* Graph = TF_NewGraph();
+    TF_Status* status = TF_NewStatus();
+    TF_SessionOptions* SessionOpts = TF_NewSessionOptions();
+    TF_Buffer* RunOpts = NULL;
+    
+    const char* saved_model_dir = "models/"; 
+    const char* tags = "serve"; 
+    
+    int ntags = 1;
+    TF_Session* Session = TF_LoadSessionFromSavedModel(SessionOpts, RunOpts, saved_model_dir, &tags, ntags, Graph, NULL, status);
+    
+    if(TF_GetCode(status) == TF_OK)
+    {
+        printf("TF_LoadSessionFromSavedModel OK\n");
+    }
+    else
+    {
+        printf("%s",TF_Message(status));
+    }
+  
 	return 0;
 }
