@@ -1,10 +1,11 @@
 #ifndef DATACSV_H
 #define DATACSV_H
+
 #include <iostream>
 #include <fstream>
 #include <string>
 #include <map>
-#include <mlpack/core.hpp>
+#include <armadillo>
 #include "rapidcsv.h"
 #include "Chess.h"
 using namespace rapidcsv;

@@ -5,12 +5,12 @@
 # Compiler settings - Can be customized.
 CC = g++
 CXXFLAGS = -std=c++17 -Wall -g -fopenmp
-LDFLAGS = -larmadillo -lboost_serialization -lX11 -lGL -lpthread -lstdc++fs -lpng -ltensorflow-core-static
+LDFLAGS = -larmadillo -lX11 -lGL -lpthread -lstdc++fs -lpng -ltensorflow
 
 # Makefile settings - Can be customized.
 APPNAME = mlapp
 EXT = .cpp
-SRCDIR = .
+SRCDIR = ./src
 OBJDIR = obj
 
 ############## Do not change anything from here downwards! #############

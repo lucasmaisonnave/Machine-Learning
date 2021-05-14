@@ -76,4 +76,6 @@ Nouveau model :
 Créer un heuristic pour MiniMax grâce aux CNN
 Le dataset change pas mais on doit utiliser un nouveau y qui va représenter l'heuristic : h = sign(qui gagne la partie)*i/nb_coup
 
-e4 e5 Nf3 Nc6 Bb5 a6 Ba4 Nf6 O-O Be7 Re1 b5 Bb3 O-O c3 d6 h3 Nb8 d4 Nbd7 c4 c6 Nc3 b4 Na4 Bb7 c5 Qc7 Nh4 g6 de5 de5 Bh6 Nc5 Nc5 Bc5 Bf8 Rf8 Nf3 Rd8 Qc2 Bd4 Nd4 Rd4 Rad1 c5 f3 Nd7 Bc4 Kg7 b3 Qd6 Kh2 Bc6 Qe2 a5 Rd4 cd4 Rc1 Bb7 Kg1 Nc5 Qd2 d3 Qe3 Kf6 Rd1 Qd4 Qd4 ed4 Kf2 Ba6 Ba6 Na6 Rc1 Ke5 Rc6 Nb8 Rc5 Ke6 Ke1 f5 ef5 gf5 Kd2 Nd7 Ra5 h5 Rb5 Ne5 Rb4 Nc6 Rb6 Kd6 g4 hg4 hg4 fg4 Rc6 Kc6 fg4 Kd5 a4 Ke5 Kd3 Kd6 Kd4 Ke6 a5 Kd6 a6 Ke6 a7 Kd6 a8 Ke6 Qd8 Kf7 Ke5 Kg7 Qe8 Kh7 Kf6 Kh6 Qh5 
+e4 e5 Nf3 Nc6 Bb5 a6 Ba4 Nf6 O-O Be7 Re1 b5 Bb3 O-O c3 d6 h3 Nb8 d4 Nbd7 c4 c6 Nc3 b4 Na4 Bb7 c5 Qc7 Nh4 g6 de5 de5 Bh6 Nc5 Nc5 Bc5 Bf8 Rf8 Nf3 Rd8 Qc2 Bd4 Nd4 Rd4 Rad1 c5 f3 Nd7 Bc4 Kg7 b3 Qd6 Kh2 Bc6 Qe2 a5 Rd4 cd4 Rc1 Bb7 Kg1 Nc5 Qd2 d3 Qe3 Kf6 Rd1 Qd4 Qd4 ed4 Kf2 Ba6 Ba6 Na6 Rc1 Ke5 Rc6 Nb8 Rc5 Ke6 Ke1 f5 ef5 gf5 Kd2 Nd7 Ra5 h5 Rb5 Ne5 Rb4 Nc6 Rb6 Kd6 g4 hg4 hg4 fg4 Rc6 Kc6 fg4 Kd5 a4 Ke5 Kd3 Kd6 Kd4 Ke6 a5 Kd6 a6 Ke6 a7 Kd6 a8 Ke6 Qd8 Kf7 Ke5 Kg7 Qe8 Kh7 Kf6 Kh6 Qh5
+
+

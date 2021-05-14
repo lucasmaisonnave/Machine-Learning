@@ -22,7 +22,7 @@ batch_size = 64
 nb_classes = 7
 
 df = read_csv(FILE_NAME, header = None)
-df = df[df[772] == BLANC]
+#df = df[df[772] == BLANC]
 
 winner = np.array(df[773])
 X = df.loc[:, :767]
@@ -90,7 +90,7 @@ plt.ylabel("loss")
 plt.legend()
 plt.show()
 
-model.save("./models/model_h1", save_format='tf')
+model.save("./models/model_h1")
 
 
 
