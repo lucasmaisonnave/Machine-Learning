@@ -5,6 +5,7 @@
 #include "olcPixelGameEngine.h"
 #include "Chess.h"
 #include "DataCSV.h"
+#include "AI.h"
 #include <iostream>
 #include <string>
 #include <math.h>
@@ -40,7 +41,7 @@ class AIGame : public PixelGameEngine
 	Chess chess;
 	CASE Csouris;
 	v2d_generic<int> pos_souris_prec;
-	//AI ai;
+	AI ai;
 	Action prec_action = { -1,-1,-1,-1 };
     vector<Action> actions;
 	int nsquare_size = 80;
@@ -99,7 +100,7 @@ public:
 		SetPixelMode(Pixel::MASK);
 		
 		//Actions possibles
-		//actions = ai.Actions(chess);
+		actions = ai.Actions(chess);
 		//movesSet = ExtractMovesSet("../data/test.csv", 2300);
 		moves = MOVES;
 		//Init la souris
@@ -124,14 +125,14 @@ public:
 	virtual bool OnUserUpdate(float fElapsedtime) override
 	{
 		
-		/*if (AI_PLAY && !end && start)
+		if (AI_PLAY && !end && start)
 		{
-			prec_action = ai.AI_Play(chess);
+			prec_action = ai.AI_Play(chess, true);
 			chess.play(prec_action);
 			nb_coups++;
 			AI_PLAY = false;
 			actions = ai.Actions(chess);
-		}*/
+		}
 		mousePos.x = GetMouseX(); mousePos.y = GetMouseY();
 		//On test les clics de souris
 		if (GetMouse(0).bPressed)
@@ -139,7 +140,7 @@ public:
 			if (PointInRect(mousePos, Plateau)) {
 				int x = AI_SIDE == BLANC ? (mousePos.x - x0) / nsquare_size : CHESS_SIZE - 1 - (mousePos.x - x0) / nsquare_size;
 				int y = AI_SIDE == BLANC ? (mousePos.y - y0) / nsquare_size : CHESS_SIZE - 1 - (mousePos.y - y0) / nsquare_size;
-				if (start) { //chess.getCase(x, y).couleur != AI_SIDE && 
+				if (chess.getCase(x, y).couleur != AI_SIDE && start) { //
 					pos_souris_prec.x = x;
 					pos_souris_prec.y = y;
 					Csouris = chess.getCase(x, y);
@@ -152,14 +153,14 @@ public:
 				start = true;
 				AI_PLAY = AI_SIDE == BLANC ? 1 : 0;
 			}
-			/*else if (PointInRect(mousePos, LVL_UP)) {
+			else if (PointInRect(mousePos, LVL_UP)) {
 				if (COUCHE_MAX < LVL_MAX)
 					COUCHE_MAX++;
 			}
 			else if (PointInRect(mousePos, LVL_DOWN)) {
 				if (COUCHE_MAX > 1)
 					COUCHE_MAX--;
-			}*/
+			}
 			
 		}
 		else if (GetMouse(0).bReleased)//On relache le clic on remet le pion choisi pour l'instant
@@ -169,8 +170,8 @@ public:
 			if (chess.play(pos_souris_prec.x, pos_souris_prec.y, x, y)) {
 				prec_action = { pos_souris_prec.x, pos_souris_prec.y, x, y };
 				AI_PLAY = !AI_PLAY;
-				//nb_coups++;
-				//actions = ai.Actions(chess);
+				nb_coups++;
+				actions = ai.Actions(chess);
 			}
 			
 			pos_souris_prec.x = -1;
@@ -183,9 +184,9 @@ public:
 			chess = Chess();
 			AI_PLAY = AI_SIDE == BLANC ? 1 : 0;
 			start = end = false;
-			//nb_coups = 0;
+			nb_coups = 0;
 			prec_action = { -1,-1,-1,-1 };
-			//actions = ai.Actions(chess);
+			actions = ai.Actions(chess);
 			moves = MOVES;
 		}
 		else if(GetKey(SPACE).bPressed && moves.size() != 0){
@@ -210,7 +211,7 @@ public:
 		DrawLine(LVL_UP.x + LVL_UP.w/2, LVL_UP.y           , LVL_UP.x + LVL_UP.w    , LVL_UP.y + LVL_UP.h, BLACK);
 		DrawLine(LVL_UP.x + LVL_UP.w  , LVL_UP.y + LVL_UP.h, LVL_UP.x               , LVL_UP.y + LVL_UP.h, BLACK);
 
-		DrawString(LVL_DOWN.x + 5, LVL_UP.y + LVL_UP.h + (LVL_DOWN.y - (LVL_UP.y + LVL_UP.h))/2 - 10, move, BLACK, 3);
+		DrawString(LVL_DOWN.x + 5, LVL_UP.y + LVL_UP.h + (LVL_DOWN.y - (LVL_UP.y + LVL_UP.h))/2 - 10, std::to_string(COUCHE_MAX), BLACK, 3);
 
 		DrawLine(LVL_DOWN.x                 , LVL_DOWN.y             , LVL_DOWN.x + LVL_DOWN.w / 2, LVL_DOWN.y + LVL_DOWN.h, BLACK);
 		DrawLine(LVL_DOWN.x + LVL_DOWN.w / 2, LVL_DOWN.y + LVL_DOWN.h, LVL_DOWN.x + LVL_DOWN.w    , LVL_DOWN.y             , BLACK);
