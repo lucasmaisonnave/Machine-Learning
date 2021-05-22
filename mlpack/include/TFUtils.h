@@ -47,7 +47,12 @@ public:
     };
     TFUtils();
     STATUS LoadModel(std::string model_file);
+    /*
+        Load model for tensorflow > v2
+    */
+    STATUS LoadModel_TFv2(std::string model_dir);
     ~TFUtils();
+    
 
     TF_Output GetOperationByName(std::string name, int idx);
 
@@ -94,6 +99,9 @@ public:
     }
 //    STATUS GetErrorCode();
     static void PrinStatus(STATUS status);
+    TF_Graph* get_Graph() const{
+        return graph_def;
+    }
 
 private:
     TF_Graph* graph_def;

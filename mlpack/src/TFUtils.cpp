@@ -283,7 +283,30 @@ void TFUtils::DeleteTensors(const std::vector<TF_Tensor*>& tensors) {
     }
 }
 
+TFUtils::STATUS TFUtils::LoadModel_TFv2(std::string model_dir){
+    graph_def = TF_NewGraph();
+    TF_Status* Status = TF_NewStatus();
+    TF_SessionOptions* SessionOpts = TF_NewSessionOptions();
+    TF_Buffer* RunOpts = NULL;
+    const char* tags = "serve";
+    int ntags = 1;
+    char* path = const_cast<char*>(model_dir.c_str());  
+    sess = TF_LoadSessionFromSavedModel(SessionOpts, RunOpts, path, &tags, ntags, graph_def, NULL, Status);
+    if (TF_GetCode(Status) == TF_OK)
+    {
+        printf("Tensorflow 2x Model loaded OK\n");
+        init_error_code = SUCCESS;
+    }
+    else
+    {
+        printf("%s", TF_Message(Status));
+        init_error_code = MODEL_LOAD_FAILED;
+    }
+    TF_DeleteSessionOptions(SessionOpts);
+    TF_DeleteStatus(Status);
+    return init_error_code;
 
+}
 #if defined(_MSC_VER)
 #  pragma warning(pop)
 #endif

@@ -45,7 +45,7 @@ for i in range(1, len(X)):
         nb_mov = 1
 
 X = X.reshape(len(X), 8, 8, 12)
-
+print(X[0])
 
 y_c1 = df[768]
 y_c1 = np.array(y_c1)
@@ -62,7 +62,7 @@ X_train, X_test, y_train, y_test = sklearn.model_selection.train_test_split(X, y
 #%%
 print("Taille train set", len(X_train))
 model = Sequential()
-model.add(Conv2D(filters=64, kernel_size=1, activation='relu', input_shape=(8,8,12)))
+model.add(Conv2D(filters=64, kernel_size=1, activation='relu', input_shape=(8,8,12), name = "imput_8_8_12"))
 model.add(MaxPooling2D())
 model.add(Conv2D(filters=24, kernel_size=1, activation='relu'))
 model.add(MaxPooling2D())
@@ -70,7 +70,7 @@ model.add(Conv2D(filters=10, kernel_size=1, activation='relu'))
 model.add(Flatten())
 model.add(BatchNormalization())
 model.add(Dense(40,activation = 'relu'))
-model.add(Dense(1,activation = 'tanh'))
+model.add(Dense(1,activation = 'tanh', name = "output_1"))
 
 model.summary()
 model.compile(optimizer='Adam', loss='mse', metrics=["mse"])
@@ -90,7 +90,7 @@ plt.ylabel("loss")
 plt.legend()
 plt.show()
 
-model.save("./models/model_h1")
+model.save("./models/model.h5")
 
 
 
