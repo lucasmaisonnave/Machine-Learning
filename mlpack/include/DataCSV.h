@@ -1,10 +1,11 @@
 #ifndef DATACSV_H
 #define DATACSV_H
+
 #include <iostream>
 #include <fstream>
 #include <string>
 #include <map>
-#include <mlpack/core.hpp>
+#include <armadillo>
 #include "rapidcsv.h"
 #include "Chess.h"
 using namespace rapidcsv;
@@ -16,53 +17,54 @@ typedef Mat<int> mati;
 
 #define TAILLE_HOT_VECT 12
 
+vector<string> col_winner;
 
 namespace DataCSV{
   vector<string> ExtractMovesSet(const string& filename, int elo_min){
     rapidcsv::Document doc(filename); 
-    std::vector<std::string> col = doc.GetColumn<std::string>("Moves");
-    std::vector<int> col_elo = doc.GetColumn<int>("White Elo");
-    vector<std::string>::iterator it = col.begin();
-    vector<int>::iterator it_elo = col_elo.begin();
-    for(size_t j = 0; j < col.size(); j++, it++, it_elo++){
-      if(col_elo[j] < elo_min){
-        col.erase(it);
-        col_elo.erase(it_elo);
+    vector<string> col_moves = doc.GetColumn<string>("Moves");
+    vector<int> col_elo = doc.GetColumn<int>("White Elo");
+    col_winner = doc.GetColumn<string>("Result-Winner");
+    for(size_t j = 0; j < col_moves.size(); j++){
+      if(col_elo[j] < elo_min || col_winner[j] == "Draw"){
+        col_moves.erase(col_moves.begin() + j);
+        col_elo.erase(col_elo.begin() + j);
+        col_winner.erase(col_winner.begin() + j);
         j--;
-        it--;
-        it_elo--;
       }
       else{
-        col[j].erase(0,3);
-        for(size_t i = 0; i < col[j].size(); i++){
-          if(col[j][i] == '.'){
-            while(col[j][i] != ' '){
-              col[j].erase(i, 1);
+        col_moves[j].erase(0,3);
+        for(size_t i = 0; i < col_moves[j].size(); i++){
+          if(col_moves[j][i] == '.'){
+            while(col_moves[j][i] != ' '){
+              col_moves[j].erase(col_moves[j].begin() + i);
               i--;
             }
-            col[j].erase(i, 1);
+            col_moves[j].erase(col_moves[j].begin() + i);
           }
-          else if(col[j][i] == 'x' || col[j][i] == '+' || col[j][i] == '#')
+          else if(col_moves[j][i] == 'x' || col_moves[j][i] == '+' || col_moves[j][i] == '#')
           {
-            col[j].erase(i, 1);
+            col_moves[j].erase(col_moves[j].begin() + i);
             i--;
           }
-          else if(col[j][i] == '='){
-            if(col[j][i + 1] != 'Q'){ //Si on transforme le pion en autre chose que la dame
-              col.erase(it);
+          else if(col_moves[j][i] == '='){
+            if(col_moves[j][i + 1] != 'Q'){ //Si on transforme le pion en autre chose que la dame on supprime parce que j'ai pas codé cette possibilité
+              col_moves.erase(col_moves.begin() + j);
+              col_elo.erase(col_elo.begin() + j);
+              col_winner.erase(col_winner.begin() + j);
               j--;
-              it--;
             }
             else
             {
-              col[j].erase(i, 2);
+              col_moves[j].erase(i, 2);
               i--;
             }
           }
         }
       }
     }
-    return col;
+    cout << "Nombre de parties à générer : " << col_moves.size() << endl;
+    return col_moves;
   }
   /*
     renvoie le premier coup de la pile moves et le supprime de moves
@@ -71,9 +73,9 @@ namespace DataCSV{
     string move;
     while(moves.front() != ' '){
       move.push_back(moves.front());
-      moves.erase(0,1);
+      moves.erase(moves.begin());
     }
-    moves.erase(0,1);
+    moves.erase(moves.begin());
     return move;
 
   }
@@ -217,9 +219,15 @@ namespace DataCSV{
         action.c1 = ConvertL(move[0]) - 1;
         for(int l1 = 0; l1 < CHESS_SIZE; l1++){
           action.l1 = l1;
-          if(chess.getCase(action.c1, action.l1).type == PION && chess.getCase(action.c1, action.l1).couleur == chess.get_whoplays())
-            if(chess.play(action, true))
-              return action;
+          if(chess.getCase(action.c1, action.l1).type == PION && chess.getCase(action.c1, action.l1).couleur == chess.get_whoplays()){
+            if(chess.play(action, true)){
+              Chess next_chess = chess;
+              next_chess.play(action);
+              int couleur_next = next_chess.get_whoplays();
+              if(!next_chess.checkThreat(next_chess.get_roi_pos(!couleur_next,0), next_chess.get_roi_pos(!couleur_next,1), !couleur_next))
+                return action;
+            }
+          }     
         }
       }
       else{ //C'est une autre pièce : B, N, R, Q, K
@@ -228,13 +236,20 @@ namespace DataCSV{
         int piece = ConvertP(move[0]);
         for(int c = 0; c < CHESS_SIZE; c++)
           for(int l = 0; l < CHESS_SIZE; l++)
-            if(chess.getCase(c, l).type == piece && chess.getCase(c, l).couleur == chess.get_whoplays())
+            if(chess.getCase(c, l).type == piece && chess.getCase(c, l).couleur == chess.get_whoplays()){
               if(chess.play(c, l, action.c2, action.l2, true))
               {
-                action.c1 = c;
-                action.l1 = l;
-                return action;
+                Chess next_chess = chess;
+                next_chess.play(c, l, action.c2, action.l2);
+                int couleur_next = next_chess.get_whoplays();
+                //On vérifie que le roi n'est pas en danger
+                if(!next_chess.checkThreat(next_chess.get_roi_pos(!couleur_next,0), next_chess.get_roi_pos(!couleur_next,1), !couleur_next)){
+                  action.c1 = c;
+                  action.l1 = l;
+                  return action;
+                }
               }
+            }
       }
     }
     else{ //taille 4
@@ -322,18 +337,79 @@ namespace DataCSV{
     return vect;
   }
 
+vector<int64_t> ConvertPieceToVectInt(const int piece, const int couleur){ 
+  if(couleur == BLANC && piece == PION){
+    vector<int64_t> vect = {1,0,0,0,0,0,0,0,0,0,0,0};
+    return vect;
+  }
+  else if(couleur == BLANC && piece == CAVALIER){
+    vector<int64_t> vect = {0,1,0,0,0,0,0,0,0,0,0,0};
+    return vect;
+  }
+  else if(couleur == BLANC && piece == FOU){
+    vector<int64_t> vect = {0,0,1,0,0,0,0,0,0,0,0,0};
+    return vect;
+  }
+  else if(couleur == BLANC && piece == TOUR){
+    vector<int64_t> vect = {0,0,0,1,0,0,0,0,0,0,0,0};
+    return vect;
+  }
+  else if(couleur == BLANC && piece == DAME){
+    vector<int64_t> vect = {0,0,0,0,1,0,0,0,0,0,0,0};
+    return vect;
+  }
+  else if(couleur == BLANC && piece == ROI){
+    vector<int64_t> vect = {0,0,0,0,0,1,0,0,0,0,0,0};
+    return vect;
+  }
+
+  if(couleur == NOIR && piece == PION){
+    vector<int64_t> vect = {0,0,0,0,0,0,1,0,0,0,0,0};
+    return vect;
+  }
+  else if(couleur == NOIR && piece == CAVALIER){
+    vector<int64_t> vect = {0,0,0,0,0,0,0,1,0,0,0,0};
+    return vect;
+  }
+  else if(couleur == NOIR && piece == FOU){
+    vector<int64_t> vect = {0,0,0,0,0,0,0,0,1,0,0,0};
+    return vect;
+  }
+  else if(couleur == NOIR && piece == TOUR){
+    vector<int64_t> vect = {0,0,0,0,0,0,0,0,0,1,0,0};
+    return vect;
+  }
+  else if(couleur == NOIR && piece == DAME){
+    vector<int64_t> vect = {0,0,0,0,0,0,0,0,0,0,1,0};
+    return vect;
+  }
+  else if(couleur == NOIR && piece == ROI){
+    vector<int64_t> vect = {0,0,0,0,0,0,0,0,0,0,0,1};
+    return vect;
+  }
+  vector<int64_t> vect = {0,0,0,0,0,0,0,0,0,0,0,0};
+  return vect;
+}
+
   /*
-    Convertis l'ensemble des coups du dataset en matrice utilisable pour la phase d'entrainement du modèle
-    On passe la matrice par référence pour de pas avoir à copier le résultat de la fonction, la matrice est
-    énorma ça prendrait beaucoup de temps.
+    Cette fonction bug à la fin : 
+    free(): invalid pointer
+    Aborted (core dumped)
+    mais je n'ai aucune idée de pourquoi, la variable movesSet qui est sensé être constante est modifié par je ne sais quelle magie
+    Ça n'empèche pas le programme de fonctionner et d'enregistrer les données mais c'est chiant parce que je comprends pas
   */
 
-  void ConvertMovesSetToMat(const vector<string>& movesSet, arma::Mat<int>& mat){
+  void ConvertMovesSetToFile(const vector<string>& movesSet, const string filename){
+    vector<string> test = movesSet;
+    ofstream file(filename, ios::trunc);
+    size_t nb_games = movesSet.size();
+    float k = 0;
     for(string moves : movesSet){
+      cout << "Progress : " << (int) (((k + 1)/ nb_games) * 100) << "%\r" << flush;
       Chess chess;
-      //string t_moves = moves;
+      int winner = col_winner[k] == "White" ? 1 : -1;
       while(moves.size() != 0)
-      {    
+      {
         string move = ExtractMove(moves);
         Action act  = ConvertToAction(move, chess);
         coli v; // vecteur image du plateau + action
@@ -343,21 +419,30 @@ namespace DataCSV{
             coli pi = ConvertPieceToVect(chess.getCase(c,l).type, chess.getCase(c,l).couleur);
             v = arma::join_cols(v, pi); //On concataine chaque case dans un seul vecteur
           }
-        coli c_act = {act.c1, act.l1, act.c2, act.l2, chess.get_whoplays()};
+        coli c_act = {act.c1, act.l1, act.c2, act.l2, chess.get_whoplays(), winner};
         v = arma::join_cols(v, c_act);
-        mat = arma::join_rows(mat, v); // On concatene la matrice avec le nouveau vecteur 
+        //Save line
+        for(size_t i = 0; i < v.size(); i++){
+          if(i != v.size() - 1){
+            file << v[i] << ",";
+          }
+          else{
+            file << v[i] << endl;
+          }
+        }
         chess.play(act);
       }
+      k++;
     }
+    cout << endl;
+    file.close();
   }
+
   void CreateDataset(int elo_min){
     cout << "Loading moves" << endl;
-    vector<string> movesSet = DataCSV::ExtractMovesSet("./data/DataSet.csv", elo_min);
-    arma::Mat<int> mat;
-    cout << "Converting data in matrix" << endl;
-    DataCSV::ConvertMovesSetToMat(movesSet, mat);
+    const vector<string> movesSet = DataCSV::ExtractMovesSet("./data/DataSet.csv", elo_min);
     cout << "Saving data" << endl;
-    mlpack::data::Save("./data/DataSet_processed.csv", mat);
+    DataCSV::ConvertMovesSetToFile(movesSet, "./data/DataSet_processed.csv");
   }
 }
 #endif

@@ -72,8 +72,10 @@ public:
 				plateau[i][j] = ch.plateau[i][j];
 		Roi_mov[0] = ch.Roi_mov[0]; Roi_mov[1] = ch.Roi_mov[1];
 		for (int i = 0; i < 2; i++)
-			for (int j = 0; j < 2; j++)
+			for (int j = 0; j < 2; j++){
 				Tour_mov[i][j] = ch.Tour_mov[i][j];
+				pos_roi[i][j] = ch.pos_roi[i][j];
+			}
 		for (int i = 0; i < 2; i++)
 			for (int j = 0; j < 6; j++)
 				Nb_Piece[i][j] = ch.Nb_Piece[i][j];
@@ -91,6 +93,12 @@ public:
 	}
 	int get_whoplays() const{
 		return who_plays;
+	}
+	/*
+		cl : 0 colonne, 0 ligne
+	*/
+	int get_roi_pos(int couleur, int cl){
+		return pos_roi[couleur][cl];
 	}
 	void set_whoplays(uint8_t wp){
 		who_plays = wp;
@@ -271,6 +279,11 @@ public:
 				Nb_Piece[plateau[l2][c2].couleur][plateau[l2][c2].type]--;
 			plateau[l2][c2] = plateau[l1][c1];
 			plateau[l1][c1].type = VIDE;
+			//Mise à jour de la position du roi			
+			if(plateau[l2][c2].type == ROI){
+				pos_roi[plateau[l2][c2].couleur][0] = c2;
+				pos_roi[plateau[l2][c2].couleur][1] = l2;
+			}
 			if (pion_dame)
 			{
 				Nb_Piece[plateau[l2][c2].couleur][PION]--;
@@ -293,4 +306,5 @@ private:
 	int Nb_Piece[2][6] = { {0,0,0,0,0,0}, {0,0,0,0,0,0}};//Nombre de pi�ces par type et couleur
 	int who_plays = BLANC;
 	bool en_passant[2][8] = { {false,false,false,false,false,false,false,false}, {false,false,false,false,false,false,false,false}};
+	int pos_roi[2][2] = {{3,7}, {3,0}}; 
 };

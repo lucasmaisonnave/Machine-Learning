@@ -15,8 +15,8 @@ using namespace DataCSV;
 
 
 #define LVL_MAX 9
-
-
+               
+#define MOVES "e4 e5 Nf3 Nc6 Bb5 a6 Ba4 Nf6 O-O Be7 Re1 b5 Bb3 O-O c3 d6 h3 Nb8 d4 Nbd7 c4 c6 Nc3 b4 Na4 Bb7 c5 Qc7 Nh4 g6 de5 de5 Bh6 Nc5 Nc5 Bc5 Bf8 Rf8 Nf3 Rd8 Qc2 Bd4 Nd4 Rd4 Rad1 c5 f3 Nd7 Bc4 Kg7 b3 Qd6 Kh2 Bc6 Qe2 a5 Rd4 cd4 Rc1 Bb7 Kg1 Nc5 Qd2 d3 Qe3 Kf6 Rd1 Qd4 Qd4 ed4 Kf2 Ba6 Ba6 Na6 Rc1 Ke5 Rc6 Nb8 Rc5 Ke6 Ke1 f5 ef5 gf5 Kd2 Nd7 Ra5 h5 Rb5 Ne5 Rb4 Nc6 Rb6 Kd6 g4 hg4 hg4 fg4 Rc6 Kc6 fg4 Kd5 a4 Ke5 Kd3 Kd6 Kd4 Ke6 a5 Kd6 a6 Ke6 a7 Kd6 a8 Ke6 Qd8 Kf7 Ke5 Kg7 Qe8 Kh7 Kf6 Kh6 Qh5 " 
 struct Rect
 {
 	int x;
@@ -72,36 +72,36 @@ public:
 	virtual bool OnUserCreate() override
 	{
 		//On charge les sprites
-		Sprite* BB = new Sprite("../SpritesChess/blackBishop.png");
+		Sprite* BB = new Sprite("./SpritesChess/blackBishop.png");
 		Pions[NOIR][FOU] = BB;
-		Sprite* BKK = new Sprite("../SpritesChess/blackKing.png");
+		Sprite* BKK = new Sprite("./SpritesChess/blackKing.png");
 		Pions[NOIR][ROI] = BKK;
-		Sprite* BKI = new Sprite("../SpritesChess/blackKnight.png");
+		Sprite* BKI = new Sprite("./SpritesChess/blackKnight.png");
 		Pions[NOIR][CAVALIER] = BKI;
-		Sprite* BP = new Sprite("../SpritesChess/blackPawn.png");
+		Sprite* BP = new Sprite("./SpritesChess/blackPawn.png");
 		Pions[NOIR][PION] = BP;
-		Sprite* BQ = new Sprite("../SpritesChess/blackQueen.png");
+		Sprite* BQ = new Sprite("./SpritesChess/blackQueen.png");
 		Pions[NOIR][DAME] = BQ;
-		Sprite* BR = new Sprite("../SpritesChess/blackRook.png");
+		Sprite* BR = new Sprite("./SpritesChess/blackRook.png");
 		Pions[NOIR][TOUR] = BR;
-		Sprite* WB = new Sprite("../SpritesChess/whiteBishop.png");
+		Sprite* WB = new Sprite("./SpritesChess/whiteBishop.png");
 		Pions[BLANC][FOU] = WB;
-		Sprite* WKK = new Sprite("../SpritesChess/whiteKing.png");
+		Sprite* WKK = new Sprite("./SpritesChess/whiteKing.png");
 		Pions[BLANC][ROI] = WKK;
-		Sprite* WKI = new Sprite("../SpritesChess/whiteKnight.png");
+		Sprite* WKI = new Sprite("./SpritesChess/whiteKnight.png");
 		Pions[BLANC][CAVALIER] = WKI;
-		Sprite* WPB = new Sprite("../SpritesChess/whitePawn.png");
+		Sprite* WPB = new Sprite("./SpritesChess/whitePawn.png");
 		Pions[BLANC][PION] = WPB;
-		Sprite* WQ = new Sprite("../SpritesChess/whiteQueen.png");
+		Sprite* WQ = new Sprite("./SpritesChess/whiteQueen.png");
 		Pions[BLANC][DAME] = WQ;
-		Sprite* WR = new Sprite("../SpritesChess/whiteRook.png");
+		Sprite* WR = new Sprite("./SpritesChess/whiteRook.png");
 		Pions[BLANC][TOUR] = WR;
 		SetPixelMode(Pixel::MASK);
 		
 		//Actions possibles
 		//actions = ai.Actions(chess);
-		movesSet = ExtractMovesSet("../data/test.csv", 2300);
-		moves = movesSet[0];
+		//movesSet = ExtractMovesSet("../data/test.csv", 2300);
+		moves = MOVES;
 		//Init la souris
 		Csouris.couleur = NOIR;
 		Csouris.type = VIDE;
@@ -186,7 +186,7 @@ public:
 			//nb_coups = 0;
 			prec_action = { -1,-1,-1,-1 };
 			//actions = ai.Actions(chess);
-			moves = movesSet[0];
+			moves = MOVES;
 		}
 		else if(GetKey(SPACE).bPressed && moves.size() != 0){
 			move = ExtractMove(moves);
