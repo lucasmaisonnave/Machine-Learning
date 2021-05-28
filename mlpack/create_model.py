@@ -1,3 +1,4 @@
+#%%
 from pandas import read_csv
 import numpy as np
 import os
@@ -43,9 +44,7 @@ for i in range(1, len(X)):
         L = [w*(j+1)/nb_mov for j in range(nb_mov)]
         y = np.concatenate((y, L), axis = 0)
         nb_mov = 1
-
 X = X.reshape(len(X), 8, 8, 12)
-print(X[0])
 
 y_c1 = df[768]
 y_c1 = np.array(y_c1)
@@ -90,7 +89,7 @@ plt.ylabel("loss")
 plt.legend()
 plt.show()
 
-model.save("./models/model.h5")
+model.save("./models/model_h1")
 
 
 

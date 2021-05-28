@@ -14,14 +14,9 @@
 using namespace olc;
 using namespace DataCSV;
 using namespace std;
-//using namespace mlpack::neighbor; // NeighborSearch and NearestNeighborSort
-//using namespace mlpack::metric; // ManhattanDistance
 
 #define FILE_NAME "../data/DataGames.csv"
 
-
-
-//void NoOpDeallocator(void* data, size_t a, void* b) {}
 
 int main(int argc, char* argv[])
 {
@@ -33,4 +28,4 @@ int main(int argc, char* argv[])
 	return 0;
 }
 
-//saved_model_cli show --dir ~/Desktop/Machine-Learning/mlpack/models/model_h1 --tag_set serve --signature_def serving_default
+

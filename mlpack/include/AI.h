@@ -13,12 +13,12 @@ int nb_coups = 0;
 typedef struct Action_Value
 {
 	Action action;
-	int value;
+	double value;
 }Action_Value;
 
 class AI {
-private:
-	int Eval(const Chess& etat)
+public:
+	double Eval(const Chess& etat)
 	{
 		//Ajout de l'heuristic qui compte le nombre de cases menacés pour chaque couleur
 		if(!bML){
@@ -27,21 +27,21 @@ private:
 			etat_s.set_whoplays(!AI_SIDE);
 			vector<Action> actions_ai_side = Actions(etat);
 			vector<Action> actions_not_ai_side = Actions(etat_s);
-			for(int i = 0; i < actions_ai_side.size(); i++)
+			for(size_t i = 0; i < actions_ai_side.size(); i++)
 				if((etat.getCase(actions_ai_side[i].c2 ,actions_ai_side[i].l2).type != VIDE && etat.getCase(actions_ai_side[i].c2 ,actions_ai_side[i].l2).couleur == !AI_SIDE))
 					threat_score++;
-			for(int i = 0; i < actions_not_ai_side.size(); i++)
+			for(size_t i = 0; i < actions_not_ai_side.size(); i++)
 				if((etat.getCase(actions_not_ai_side[i].c2 ,actions_not_ai_side[i].l2).type != VIDE && etat.getCase(actions_not_ai_side[i].c2 ,actions_not_ai_side[i].l2).couleur == AI_SIDE))
 					threat_score--;
 			//h = material_score + threat_score*10
 			return  etat.getScoreMat(AI_SIDE) - etat.getScoreMat(!AI_SIDE) + threat_score*10;
 		}
 		else{
-			return (etat.get_whoplays() == BLANC ? 1 : -1) * model_ml.Compute_heuristic(etat);
+			return (etat.get_whoplays() == AI_SIDE ? 1 : -1) * model_ml.Compute_heuristic(etat);
 		}
 		return 0;
 	}
-
+private:
 	bool Test_Arret(const Chess& etat, int d) const
 	{
 		return d == COUCHE_MAX || etat.getNb_Piece(BLANC, ROI) == 0 || etat.getNb_Piece(NOIR, ROI) == 0;
@@ -195,10 +195,10 @@ private:
 		return next_etat;
 	}
 	TFModel model_ml;
-	bool bML;
+	bool bML = true;
 public:
 	AI(){
-		model_ml.Load("./models/model_h1", "serving_default_conv2d_input", "StatefulPartitionedCall");
+		model_ml.Load("./models/model_h1", "serving_default_imput_8_8_12_input", "StatefulPartitionedCall");
 	}
 	vector<Action> Actions(Chess etat)	//Retourne les actions possibles sur �tat
 	{

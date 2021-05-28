@@ -125,14 +125,14 @@ public:
 	virtual bool OnUserUpdate(float fElapsedtime) override
 	{
 		
-		if (AI_PLAY && !end && start)
+		/*if (AI_PLAY && !end && start)
 		{
 			prec_action = ai.AI_Play(chess, true);
 			chess.play(prec_action);
 			nb_coups++;
 			AI_PLAY = false;
 			actions = ai.Actions(chess);
-		}
+		}*/
 		mousePos.x = GetMouseX(); mousePos.y = GetMouseY();
 		//On test les clics de souris
 		if (GetMouse(0).bPressed)
@@ -140,7 +140,7 @@ public:
 			if (PointInRect(mousePos, Plateau)) {
 				int x = AI_SIDE == BLANC ? (mousePos.x - x0) / nsquare_size : CHESS_SIZE - 1 - (mousePos.x - x0) / nsquare_size;
 				int y = AI_SIDE == BLANC ? (mousePos.y - y0) / nsquare_size : CHESS_SIZE - 1 - (mousePos.y - y0) / nsquare_size;
-				if (chess.getCase(x, y).couleur != AI_SIDE && start) { //
+				if (start) { //chess.getCase(x, y).couleur != AI_SIDE &&
 					pos_souris_prec.x = x;
 					pos_souris_prec.y = y;
 					Csouris = chess.getCase(x, y);
@@ -150,7 +150,7 @@ public:
 				AI_SIDE = !AI_SIDE;
 			else if (PointInRect(mousePos, Bouton_start))
 			{
-				start = true;
+				start = !start;
 				AI_PLAY = AI_SIDE == BLANC ? 1 : 0;
 			}
 			else if (PointInRect(mousePos, LVL_UP)) {
@@ -262,6 +262,11 @@ public:
 		else
 			end = false;
 		
+		//Eval
+		DrawString(0, 0, std::to_string(ai.Eval(chess)), BLACK, 3);
+
+
+
 		return true;
 	}
 
