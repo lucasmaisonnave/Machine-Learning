@@ -17,14 +17,20 @@ using namespace std;
 
 #define FILE_NAME "../data/DataGames.csv"
 
-
+/*
+  Usage : play against the AI : ./mlapp
+          create dataset : ./mlapp elo, where elo is the minimum elo of games used in the dataset (max : 3300)
+*/
 int main(int argc, char* argv[])
 {
-  //Ranking rate
-	//CreateDataset(atoi(argv[1]));
-  AIGame game;
-	game.Construct(1080, 720, 1, 1);
-  game.Start();
+  if(argc == 2){
+	  CreateDataset(atoi(argv[1]));
+  }
+  else if(argc == 1){
+    AIGame game;
+    game.Construct(1080, 720, 1, 1);
+    game.Start();
+  }
 	return 0;
 }
 
