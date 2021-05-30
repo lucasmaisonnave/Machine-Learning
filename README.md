@@ -6,6 +6,6 @@ I also train some models on python with the Mnist digits dataset
 
 
 ## DeepChess
-To create the dataset used by create_model.py : use ./createData "elo", where elo is the minimum elo of games used in the dataset (max : 3300)
+To create the dataset used by create_model.py : use ./mlapp "elo", where elo is the minimum elo of games used in the dataset (max : 3300)
 
 To play against the AI : ./mlapp
