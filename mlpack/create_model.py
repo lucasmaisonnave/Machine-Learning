@@ -14,23 +14,23 @@ import sklearn
 import sklearn.model_selection
 
 #%%
-print("Load Data")
+
 FILE_NAME = "./data/DataSet_processed.csv"
 BLANC = 1
 NOIR = 0
 epochs = 20
 batch_size = 64
 nb_classes = 7
-
+print("Load Data")
 df = read_csv(FILE_NAME, header = None)
 #df = df[df[772] == BLANC]
-
+print("Process data")
 winner = np.array(df[773])
 X = df.loc[:, :767]
 X = np.array(X)
 ref = X[0] #Premier coup utile pour séparer les différentes parties dans le dataset
 y = []
-
+print("Create y")
 nb_mov = 1
 for i in range(1, len(X)):
     if(not np.array_equal(X[i], ref)):
@@ -57,7 +57,7 @@ y_l2 = np.array(y_l2)
 
 
 X_train, X_test, y_train, y_test = sklearn.model_selection.train_test_split(X, y, test_size=0.3, random_state = 42)
-
+print("Data processing done")
 #%%
 print("Taille train set", len(X_train))
 model = Sequential()
@@ -68,7 +68,6 @@ model.add(MaxPooling2D())
 model.add(Conv2D(filters=10, kernel_size=1, activation='relu'))
 model.add(Flatten())
 model.add(BatchNormalization())
-model.add(Dense(40,activation = 'relu'))
 model.add(Dense(1,activation = 'tanh', name = "output_1"))
 
 model.summary()

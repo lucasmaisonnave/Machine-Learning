@@ -37,7 +37,7 @@ public:
 			return  etat.getScoreMat(AI_SIDE) - etat.getScoreMat(!AI_SIDE) + threat_score*10;
 		}
 		else{
-			return (etat.get_whoplays() == AI_SIDE ? 1 : -1) * model_ml.Compute_heuristic(etat);
+			return (AI_SIDE == BLANC ? 1 : -1) * 200 * model_ml.Compute_heuristic(etat) + etat.getScoreMat(AI_SIDE) - etat.getScoreMat(!AI_SIDE);
 		}
 		return 0;
 	}
@@ -127,7 +127,7 @@ private:
 		}
 	}
 
-	Action_Value Val_Max(Chess etat, int alpha, int beta, int d)
+	Action_Value Val_Max(Chess etat, double alpha, double beta, int d)
 	{
 		if (Test_Arret(etat, d))
 		{
@@ -140,7 +140,7 @@ private:
 		vector<Action> actions = Actions(etat);
 		for (auto action : actions)
 		{
-			int last_v = alpha; 
+			double last_v = alpha; 
 			alpha = fmax(alpha, Val_Min(Result(etat, action), alpha, beta, d + 1).value);
 			if (alpha != last_v)
 				next_action = action;
@@ -157,7 +157,7 @@ private:
 		act_val.value = alpha;
 		return act_val;
 	}
-	Action_Value Val_Min(Chess etat, int alpha, int beta, int d)
+	Action_Value Val_Min(Chess etat, double alpha, double beta, int d)
 	{
 		if (Test_Arret(etat, d))
 		{
@@ -170,7 +170,7 @@ private:
 		vector<Action> actions = Actions(etat);
 		for (auto action : actions)
 		{
-			int last_v = beta; 
+			double last_v = beta; 
 			beta = fmin(beta, Val_Max(Result(etat, action), alpha, beta, d + 1).value);
 			if (beta != last_v)
 				next_action = action;
