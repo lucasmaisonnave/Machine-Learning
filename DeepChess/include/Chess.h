@@ -1,5 +1,6 @@
 #pragma once
 #include <iostream>
+#include <vector>
 using namespace std;
 #define CHESS_SIZE 8
 #define SGN(l) (l >= 0 ? 1 : -1)
@@ -19,9 +20,68 @@ typedef struct Action {
 	int c2;
 	int l2;
 }Action;
+
+
+template<typename T>
+vector<T> ConvertPieceToVectInt(const int piece, const int couleur){ 
+  if(couleur == BLANC && piece == PION){
+    vector<T> vect = {1,0,0,0,0,0,0,0,0,0,0,0};
+    return vect;
+  }
+  else if(couleur == BLANC && piece == CAVALIER){
+    vector<T> vect = {0,1,0,0,0,0,0,0,0,0,0,0};
+    return vect;
+  }
+  else if(couleur == BLANC && piece == FOU){
+    vector<T> vect = {0,0,1,0,0,0,0,0,0,0,0,0};
+    return vect;
+  }
+  else if(couleur == BLANC && piece == TOUR){
+    vector<T> vect = {0,0,0,1,0,0,0,0,0,0,0,0};
+    return vect;
+  }
+  else if(couleur == BLANC && piece == DAME){
+    vector<T> vect = {0,0,0,0,1,0,0,0,0,0,0,0};
+    return vect;
+  }
+  else if(couleur == BLANC && piece == ROI){
+    vector<T> vect = {0,0,0,0,0,1,0,0,0,0,0,0};
+    return vect;
+  }
+
+  if(couleur == NOIR && piece == PION){
+    vector<T> vect = {0,0,0,0,0,0,1,0,0,0,0,0};
+    return vect;
+  }
+  else if(couleur == NOIR && piece == CAVALIER){
+    vector<T> vect = {0,0,0,0,0,0,0,1,0,0,0,0};
+    return vect;
+  }
+  else if(couleur == NOIR && piece == FOU){
+    vector<T> vect = {0,0,0,0,0,0,0,0,1,0,0,0};
+    return vect;
+  }
+  else if(couleur == NOIR && piece == TOUR){
+    vector<T> vect = {0,0,0,0,0,0,0,0,0,1,0,0};
+    return vect;
+  }
+  else if(couleur == NOIR && piece == DAME){
+    vector<T> vect = {0,0,0,0,0,0,0,0,0,0,1,0};
+    return vect;
+  }
+  else if(couleur == NOIR && piece == ROI){
+    vector<T> vect = {0,0,0,0,0,0,0,0,0,0,0,1};
+    return vect;
+  }
+  vector<T> vect = {0,0,0,0,0,0,0,0,0,0,0,0};
+  return vect;
+}
+
+
+
 class Chess {
 public:
-	Chess() {
+	Chess() : plat_vec(CHESS_SIZE*CHESS_SIZE*12) {
 		int type[CHESS_SIZE][CHESS_SIZE] = {{TOUR, CAVALIER, FOU, ROI, DAME, FOU, CAVALIER, TOUR},
 											{PION, PION, PION, PION, PION, PION, PION, PION},
 											{VIDE, VIDE, VIDE, VIDE, VIDE, VIDE, VIDE, VIDE},
@@ -63,6 +123,7 @@ public:
 				plateau[i][j].type = type[i][j];
 				plateau[i][j].couleur = couleur[i][j];
 				Nb_Piece[plateau[i][j].couleur][plateau[i][j].type]++;
+				InsertV(i, j);
 			}
 
 	}
@@ -80,6 +141,7 @@ public:
 			for (int j = 0; j < 6; j++)
 				Nb_Piece[i][j] = ch.Nb_Piece[i][j];
 		who_plays = ch.who_plays;
+		plat_vec = ch.plat_vec;
 	}
 	CASE getCase(int colonne, int ligne) const {
 		return plateau[ligne][colonne];
@@ -99,6 +161,9 @@ public:
 	*/
 	int get_roi_pos(int couleur, int cl){
 		return pos_roi[couleur][cl];
+	}
+	vector<float> get_plat_vec() const{
+		return plat_vec;
 	}
 	void set_whoplays(uint8_t wp){
 		who_plays = wp;
@@ -278,7 +343,9 @@ public:
 			if (plateau[l2][c2].type != VIDE)
 				Nb_Piece[plateau[l2][c2].couleur][plateau[l2][c2].type]--;
 			plateau[l2][c2] = plateau[l1][c1];
+			InsertV(l2, c2);
 			plateau[l1][c1].type = VIDE;
+			InsertV(l1, c1);
 			//Mise à jour de la position du roi			
 			if(plateau[l2][c2].type == ROI){
 				pos_roi[plateau[l2][c2].couleur][0] = c2;
@@ -289,6 +356,7 @@ public:
 				Nb_Piece[plateau[l2][c2].couleur][PION]--;
 				Nb_Piece[plateau[l2][c2].couleur][DAME]++;
 				plateau[l2][c2].type = DAME;
+				InsertV(l2, c2);
 			}
 			who_plays = !who_plays;
 		}
@@ -297,9 +365,16 @@ public:
 	bool play(const Action& action, bool test = false) {
 		return play(action.c1, action.l1, action.c2, action.l2, test);
 	}
+	void InsertV(int l, int c){
+		vector<float> v = ConvertPieceToVectInt<float>(plateau[l][c].type, plateau[l][c].couleur);
+		for(size_t n = 0; n < v.size(); n++){
+			plat_vec[c*CHESS_SIZE*12 + l*12 + n] = v[n];
+		}
+	}
 	
 private:
 	CASE plateau[CHESS_SIZE][CHESS_SIZE]; //(ligne, colonne)
+	vector<float> plat_vec;
 	//Pour rock
 	bool Roi_mov[2] = { false, false };
 	bool Tour_mov[2][2] = { {false, false}, {false, false} };//(couleur, dir)

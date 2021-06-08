@@ -31,13 +31,7 @@ public:
         return stat;
     }
     double Compute_heuristic(const Chess& chess){
-        vector<float> input_vals(CHESS_SIZE*CHESS_SIZE*12);
-        for(int c = 0; c < CHESS_SIZE; c++)
-            for(int l = 0; l < CHESS_SIZE; l++){
-                vector<float> new_vect = ConvertPieceToVectInt<float>(chess.getCase(c,l).type, chess.getCase(c,l).couleur);
-                for(size_t i = 0; i < new_vect.size(); i++)
-                    input_vals[c*CHESS_SIZE*12 + l*12 + i] = new_vect[i];
-            }
+        vector<float> input_vals = chess.get_plat_vec();
         input_tensors = {TFUtils::CreateTensor<float>(TF_FLOAT, input_dims, input_vals)};
         TFU.RunSession(input_ops, input_tensors, output_ops, output_tensors);
         const std::vector<std::vector<float>> data = TFUtils::GetTensorsData<float>(output_tensors);

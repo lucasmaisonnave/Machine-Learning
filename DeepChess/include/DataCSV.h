@@ -337,60 +337,7 @@ namespace DataCSV{
     return vect;
   }
 
-template<typename T>
-vector<T> ConvertPieceToVectInt(const int piece, const int couleur){ 
-  if(couleur == BLANC && piece == PION){
-    vector<T> vect = {1,0,0,0,0,0,0,0,0,0,0,0};
-    return vect;
-  }
-  else if(couleur == BLANC && piece == CAVALIER){
-    vector<T> vect = {0,1,0,0,0,0,0,0,0,0,0,0};
-    return vect;
-  }
-  else if(couleur == BLANC && piece == FOU){
-    vector<T> vect = {0,0,1,0,0,0,0,0,0,0,0,0};
-    return vect;
-  }
-  else if(couleur == BLANC && piece == TOUR){
-    vector<T> vect = {0,0,0,1,0,0,0,0,0,0,0,0};
-    return vect;
-  }
-  else if(couleur == BLANC && piece == DAME){
-    vector<T> vect = {0,0,0,0,1,0,0,0,0,0,0,0};
-    return vect;
-  }
-  else if(couleur == BLANC && piece == ROI){
-    vector<T> vect = {0,0,0,0,0,1,0,0,0,0,0,0};
-    return vect;
-  }
 
-  if(couleur == NOIR && piece == PION){
-    vector<T> vect = {0,0,0,0,0,0,1,0,0,0,0,0};
-    return vect;
-  }
-  else if(couleur == NOIR && piece == CAVALIER){
-    vector<T> vect = {0,0,0,0,0,0,0,1,0,0,0,0};
-    return vect;
-  }
-  else if(couleur == NOIR && piece == FOU){
-    vector<T> vect = {0,0,0,0,0,0,0,0,1,0,0,0};
-    return vect;
-  }
-  else if(couleur == NOIR && piece == TOUR){
-    vector<T> vect = {0,0,0,0,0,0,0,0,0,1,0,0};
-    return vect;
-  }
-  else if(couleur == NOIR && piece == DAME){
-    vector<T> vect = {0,0,0,0,0,0,0,0,0,0,1,0};
-    return vect;
-  }
-  else if(couleur == NOIR && piece == ROI){
-    vector<T> vect = {0,0,0,0,0,0,0,0,0,0,0,1};
-    return vect;
-  }
-  vector<T> vect = {0,0,0,0,0,0,0,0,0,0,0,0};
-  return vect;
-}
 
   /*
     Cette fonction bug à la fin : 
