@@ -21,7 +21,9 @@ private:
 	using WeightsVector = std::vector<ublas::matrix<double>>;
 	BiasesVector biases;
 	WeightsVector weights;
-    cost_function C;
+    cost_function* C = nullptr;
+    std::vector<Activation*> fct_act;
+    int n; //Training set size
 
 public:
 	
@@ -29,31 +31,40 @@ public:
 	using TrainingData = std::pair<ublas::vector<double>, ublas::vector<double>>;
 	using TrainingDataIterator = typename std::vector<TrainingData>::iterator;
 	
-	Network(std::vector<int> sizes, const cost_function& _C) : m_sizes(sizes), L(sizes.size()), C(_C){
+	Network(std::vector<int> sizes, std::vector<Activation*> _fct_act, cost_function* _C) : fct_act(_fct_act), m_sizes(sizes), L(sizes.size()), C(_C){
         for(int i = 1; i < L; i++){
             ublas::vector<double> b(m_sizes[i]);
-            Normal_Random(b);
+            Normal_Random(b, 1.0 / std::sqrt(m_sizes[i - 1]));
             biases.push_back(b);
             ublas::matrix<double> w(m_sizes[i], m_sizes[i - 1]);
-            Normal_Random(w);
+            Normal_Random(w, 1.0 / std::sqrt(m_sizes[i - 1]));
             weights.push_back(w);
         }
+        C->set_activation(fct_act[fct_act.size() - 1]);
+    }
+
+    ~Network(){
+        if(C)
+            delete C;
+        for(auto fct : fct_act)
+            if(fct)
+                delete fct;
     }
 
     ublas::vector<double> feedforward(ublas::vector<double> a){
         for(int i = 0; i < L - 1; i++)
-            a = sigmoid(prod(weights[i], a) + biases[i]);
+            a = fct_act[i]->f(prod(weights[i], a) + biases[i]);
         return a;
     }
 
-    void SGD(std::vector<TrainingData> training_data, int epochs, int mini_batch_size, double eta,
+    void SGD(std::vector<TrainingData> training_data, int epochs, int mini_batch_size, double eta, double lambda,
 		std::vector<TrainingData> test_data){
+            n = training_data.size();
             for(int i = 0; i < epochs; i++){
-                //std::cout << i << '\r' << std::flush;
                 std::shuffle(training_data.begin(), training_data.end(), rd);
                 for(TrainingDataIterator k = training_data.begin(); k < training_data.end(); k += mini_batch_size){
-                    update_mini_batch(k, mini_batch_size, eta);
-                    std::cout << training_data.end() - k << '\r' << std::flush;
+                    update_mini_batch(k, mini_batch_size, eta, lambda);
+                    std::cout << (1 - (training_data.end() - k) / (double) n)* 100 << '\r' << std::flush;
                 }
                 if(test_data.size() != 0)
                     std::cout << "Epoch : " << i << "/" << epochs << " Test data : " << evaluate(test_data) << "/" << test_data.size() << std::endl;
@@ -67,7 +78,7 @@ public:
 		}
 	}
 
-    void update_mini_batch(TrainingDataIterator it, int mini_batch_size, double eta){
+    void update_mini_batch(TrainingDataIterator it, int mini_batch_size, double eta, double lambda = 0){
         WeightsVector nabla_w;
         BiasesVector nabla_b;
         PopulateZeroWeightsAndBiases(nabla_b, nabla_w);
@@ -84,8 +95,8 @@ public:
 			}
         }
         for (size_t k = 0; k < biases.size(); ++k) {
-            weights[k] -= eta / mini_batch_size  * nabla_w[k];
-            biases[k] -= eta / mini_batch_size  * nabla_b[k];
+            weights[k] = (1 - eta * lambda / (double) n) * weights[k] - eta / mini_batch_size * nabla_w[k];
+            biases[k] -= eta / mini_batch_size * nabla_b[k];
         }
 
     }
@@ -101,17 +112,17 @@ public:
         for(size_t i = 0; i < biases.size(); i++){
             z = prod(weights[i], activations[i]) + biases[i];
             zs.push_back(z);
-            activation = sigmoid(z);
+            activation = fct_act[i]->f(z);
             activations.push_back(activation);
         }
-        ublas::vector<double> delta_l = C.delta(zs[biases.size() - 1], activations[L - 1], y);
+        ublas::vector<double> delta_l = C->delta(zs[biases.size() - 1], activations[L - 1], y);
         nabla_b[L - 2] = delta_l;
         nabla_w[L - 2] = boost::numeric::ublas::outer_prod(delta_l, activations[L - 2]);
         
         for(int l = L - 1; l >= 2; l--){
-            auto sig_prime = sigmoid_prime(zs[l - 2]);
+            auto fct_prime = fct_act[l - 2]->f_prime(zs[l - 2]);
             ublas::vector<double> tr = prod( boost::numeric::ublas::trans(weights[l - 1]), delta_l);
-            delta_l = boost::numeric::ublas::element_prod(tr, sig_prime);
+            delta_l = boost::numeric::ublas::element_prod(tr, fct_prime);
             nabla_b[l - 2] = delta_l;
             nabla_w[l - 2] = boost::numeric::ublas::outer_prod(delta_l, activations[l - 2]);
         }
@@ -143,8 +154,11 @@ int main() {
 		std::cout << "Error: " << ex << std::endl;
 		return 0;
 	}
-	Network net({ 784, 30, 10 }, CrossEntropy());
-	net.SGD(td, 30, 10, 3.0, testData);
+    auto cost = new CrossEntropy();
+    Sigmoid* sigmoid = new Sigmoid();
+    Softmax* softmax = new Softmax();
+	Network net({ 784, 30, 10 }, {sigmoid, softmax}, cost);
+	net.SGD(td, 10, 10, 0.1, 5.0, testData);
 
 	return 0;
 }
