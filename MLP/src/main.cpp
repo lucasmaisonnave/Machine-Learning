@@ -25,6 +25,10 @@ private:
     std::vector<Activation*> fct_act;
     int n; //Training set size
 
+    //Velocity used for MGD
+    WeightsVector v_w;
+    BiasesVector v_b;
+
 public:
 	
 	// Type definition of the Training data
@@ -41,6 +45,7 @@ public:
             weights.push_back(w);
         }
         C->set_activation(fct_act[fct_act.size() - 1]);
+        PopulateZeroWeightsAndBiases(v_b, v_w);
     }
 
     ~Network(){
@@ -56,18 +61,32 @@ public:
             a = fct_act[i]->f(prod(weights[i], a) + biases[i]);
         return a;
     }
-
+    //Stochastic Gradient Descent
     void SGD(std::vector<TrainingData> training_data, int epochs, int mini_batch_size, double eta, double lambda,
 		std::vector<TrainingData> test_data){
             n = training_data.size();
             for(int i = 0; i < epochs; i++){
                 std::shuffle(training_data.begin(), training_data.end(), rd);
                 for(TrainingDataIterator k = training_data.begin(); k < training_data.end(); k += mini_batch_size){
-                    update_mini_batch(k, mini_batch_size, eta, lambda);
+                    update_mini_batch_SGD(k, mini_batch_size, eta, lambda);
                     std::cout << (1 - (training_data.end() - k) / (double) n)* 100 << '\r' << std::flush;
                 }
                 if(test_data.size() != 0)
-                    std::cout << "Epoch : " << i << "/" << epochs << " Test data : " << evaluate(test_data) << "/" << test_data.size() << std::endl;
+                    std::cout << "Epoch : " << i + 1 << "/" << epochs << " Test data : " << evaluate(test_data) << "/" << test_data.size() << std::endl;
+            }
+    }
+    //Momentum-based Gradient Descent
+    void MGD(std::vector<TrainingData> training_data, int epochs, int mini_batch_size, double eta, double lambda, double mu,
+		std::vector<TrainingData> test_data){
+            n = training_data.size();
+            for(int i = 0; i < epochs; i++){
+                std::shuffle(training_data.begin(), training_data.end(), rd);
+                for(TrainingDataIterator k = training_data.begin(); k < training_data.end(); k += mini_batch_size){
+                    update_mini_batch_MGD(k, mini_batch_size, eta, lambda, mu);
+                    std::cout << (1 - (training_data.end() - k) / (double) n)* 100 << '\r' << std::flush;
+                }
+                if(test_data.size() != 0)
+                    std::cout << "Epoch : " << i + 1 << "/" << epochs << " Test data : " << evaluate(test_data) << "/" << test_data.size() << std::endl;
             }
     }
 
@@ -78,7 +97,7 @@ public:
 		}
 	}
 
-    void update_mini_batch(TrainingDataIterator it, int mini_batch_size, double eta, double lambda = 0){
+    void update_mini_batch_SGD(TrainingDataIterator it, int mini_batch_size, double eta, double lambda = 0){
         WeightsVector nabla_w;
         BiasesVector nabla_b;
         PopulateZeroWeightsAndBiases(nabla_b, nabla_w);
@@ -97,6 +116,31 @@ public:
         for (size_t k = 0; k < biases.size(); ++k) {
             weights[k] = (1 - eta * lambda / (double) n) * weights[k] - eta / mini_batch_size * nabla_w[k];
             biases[k] -= eta / mini_batch_size * nabla_b[k];
+        }
+
+    }
+
+    void update_mini_batch_MGD(TrainingDataIterator it, int mini_batch_size, double eta, double lambda = 0, double mu = 0.5){
+        WeightsVector nabla_w;
+        BiasesVector nabla_b;
+        PopulateZeroWeightsAndBiases(nabla_b, nabla_w);
+        for(auto i = 0; i < mini_batch_size; ++i, it++){
+            auto &x = it->first;  // test data
+			auto &y = it->second; // expected result
+			BiasesVector delta_nabla_b;
+			WeightsVector delta_nabla_w;
+			PopulateZeroWeightsAndBiases(delta_nabla_b, delta_nabla_w);
+			backwardprop(x, y, delta_nabla_w, delta_nabla_b);
+			for (size_t k = 0; k < biases.size(); ++k) {
+				nabla_b[k] += delta_nabla_b[k];
+				nabla_w[k] += delta_nabla_w[k];
+			}
+        }
+        for (size_t k = 0; k < biases.size(); ++k) {
+            v_w[k] = mu * v_w[k] - eta / mini_batch_size *  nabla_w[k];
+            v_b[k] = mu * v_b[k] - eta / mini_batch_size *  nabla_b[k];
+            weights[k] = (1 - eta * lambda / (double) n) * weights[k] + v_w[k];
+            biases[k] += v_b[k];
         }
 
     }
@@ -158,7 +202,7 @@ int main() {
     Sigmoid* sigmoid = new Sigmoid();
     Softmax* softmax = new Softmax();
 	Network net({ 784, 30, 10 }, {sigmoid, softmax}, cost);
-	net.SGD(td, 10, 10, 0.1, 5.0, testData);
+	net.MGD(td, 10, 10, 0.1, 5.0, 0.5, testData);
 
 	return 0;
 }
